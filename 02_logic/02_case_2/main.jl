@@ -258,7 +258,7 @@ for n_neurons in [32]
                 top_margin = 25Plots.mm,
             )
             plot!(plt1, tsteps_train_complete, pred_waveform_real_train_complete, linewidth=line_width, label="NN test (Re)", legend_position=:topleft, title= "Train progress: "*wave_id_dict[length(wave_id)], color=:orange) 
-            plot!(plt1, tsteps_train_complete[1:N], pred_waveform_real_train_complete[1:N], linewidth=line_width, label="NN train (Re)", color=:blue)
+            plot!(plt1, tsteps_train_complete[1:N], pred_waveform_real_train_complete[1:N], linewidth=line_width, label="NN train (Re)")
 
             # test waveform
             plt12 = plot(
@@ -305,7 +305,7 @@ for n_neurons in [32]
                 right_margin = 25Plots.mm,
                 top_margin = 25Plots.mm,
                 )
-            plot!(twinx(), tsteps_train, e, color=:red, linewidth = line_width, label="e",
+            plot!(twinx(), tsteps_train, e, color=:orange, linewidth = line_width, label="e",
             titlefontsize = title_font_size,
             legendfontsize = legend_font_size,
             guidefontsize=title_font_size,
@@ -330,7 +330,7 @@ for n_neurons in [32]
                 right_margin = 25Plots.mm,
                 top_margin = 25Plots.mm,
             )
-            plot!(twinx(), tsteps_test, e, color=:red, linewidth = line_width, label="e",
+            plot!(twinx(), tsteps_test, e, color=:orange, linewidth = line_width, label="e",
             titlefontsize = title_font_size,
             legendfontsize = legend_font_size,
             guidefontsize=title_font_size,
