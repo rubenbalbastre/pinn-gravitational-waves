@@ -27,16 +27,18 @@ show_plots = true
 save_plots_gif = false
 save_data = true
 model_name = "test/"
-test_name = "architecture_1__32/"
-output_directory = "../../01_data/02_output/02_case_2/1_system/"
+test_name = "test_all_n/"
+output_directory = "../../01_data/02_output/02_case_2/n_system/"
 output_dir = output_directory*test_name
 solutions_dir = output_dir*"solutions/"
 
 # data
 wave_id = [
+    # "SXS:BBH:0169",
+    # "SXS:BBH:0168",
     "SXS:BBH:0217",
-    "SXS:BBH:0211",
-    # "SXS:BBH:0072"
+    # "SXS:BBH:0211",
+    "SXS:BBH:0072"
     # "SXS:BBH:0001",
     # "SXS:BBH:2085"
 ]
@@ -100,19 +102,47 @@ plot_list = [];
 function set_title(index:: Int64):: String
 
     if index == 1
-        return "Train predictions "*wave_id_dict[index]
+        return wave_id_dict[index]
     elseif index == 2
-        return "Test predictions "*wave_id_dict[index]
+        return wave_id_dict[index]
     end
 end
+
+title_font_size = 20;
+legend_font_size = 16;
+line_width=3;
+tick_font_size = title_font_size;
+grid_alpha=0.4;
+grid_style=:dot;
 
 for index in range(1, num_waves)
 
     # waveforms
-    x1 = plot(tsteps_train_array[index], exact_train_wf_real_array[index], markershape=:none,
-        linewidth = 2, alpha = 0.5, label="wform data (Re)", legend=:topleft, title=set_title(index))
-    plot!(x1, tsteps_train_array[index], pred_waveform_real_train_array[index], markershape=:none,
-        linewidth = 2, alpha = 0.5, label="wform NN (Re)")
+    x1 = plot(tsteps_train_array[index], exact_train_wf_real_array[index],
+        label="datos (Re)", title=set_title(index),
+        titlefontsize = 24,
+        legendfontsize = legend_font_size,
+        guidefontsize=title_font_size,
+        gridalpha=grid_alpha,
+        gridstyle=grid_style,
+        tickfontsize=tick_font_size,
+        color=:black,
+        seriestype=:scatter,
+        ms=5,
+        markershape=:none,
+        size=(1200, 450),
+        # bottom_margin = 10Plots.mm,
+        left_margin = 25Plots.mm,
+        right_margin = 10Plots.mm,
+        # top_margin = 10Plots.mm,
+        framestyle=:box,
+        legend=:top, 
+        legend_column=2,
+        xlabel="Tiempo",
+        ylabel="Forma de onda"
+        )
+    plot!(x1, tsteps_train_array[index], pred_waveform_real_train_array[index],
+        linewidth = line_width, label="NN (Re)")
 
     # orbits
     orbit_nn1 = orbits_1_array[index]
@@ -120,26 +150,73 @@ for index in range(1, num_waves)
     N = size(orbit_nn1, 2)
     x2 = plot(
         train_x_1_array[index][1:N], train_y_1_array[index][1:N],
-        linewidth = 2, alpha = 0.5,
-        label="orbit data "*wave_id_dict[index], title=set_title(index), aspect_ratio=:equal
+        label="datos", 
+        # title=set_title(index),
+         aspect_ratio=:equal,
+        titlefontsize = title_font_size,
+        legendfontsize = legend_font_size,
+        guidefontsize=title_font_size,
+        gridalpha=grid_alpha,
+        gridstyle=grid_style,
+        tickfontsize=tick_font_size,
+        markershape=:none,
+        color=:black,
+        # bottom_margin = 10Plots.mm,
+        left_margin = 20Plots.mm,
+        right_margin = 10Plots.mm,
+        # top_margin = 5Plots.mm,
+        framestyle=:box,
+        # legend=:outertop,
+        # legend_column=2,
+        linewidth=line_width,
+        xlabel="x",
+        ylabel="y"
         )
     plot!(x2, orbit_nn1[1,1:end-1], orbit_nn1[2,1:end-1],
-        linewidth = 2, alpha = 0.5,
-        label="orbit NN "*wave_id_dict[index], title= "Test predictions "*wave_id_dict[index])
+        linewidth=line_width,
+        label="NN", 
+        # title= ""*wave_id_dict[index], 
+        linestyle=:dash
+        )
 
     # p, e
     p = solutions_array[index][3,:]
     e = solutions_array[index][4, :]
-    x3 = plot(tsteps_train_array[index][1:N], p, linewidth = 2, alpha = 0.5, label="p", legend=:best, title=set_title(index))
-    plot!(twinx(), tsteps_train_array[index][1:N], e, linewidth = 2, color=:red, alpha = 0.5, label="e", legend=:topleft)
+    x3 = plot(tsteps_train_array[index][1:N], p, label="semi-latus rectum",
+        #  title=set_title(index),
+        titlefontsize = title_font_size,
+        legendfontsize = legend_font_size,
+        guidefontsize=title_font_size,
+        gridalpha=grid_alpha,
+        gridstyle=grid_style,
+        tickfontsize=tick_font_size,
+        markershape=:none,
+        # bottom_margin = 10Plots.mm,
+        left_margin = 10Plots.mm,
+        right_margin = 10Plots.mm,
+        # top_margin = 10Plots.mm,
+        framestyle=:box,
+        legend=:best,
+        linewidth=line_width,
+        xlabel="Tiempo"
+    )
+    plot!(twinx(), tsteps_train_array[index][1:N], e, linewidth = line_width, color=2, label="excentricidad",
+    titlefontsize = title_font_size,
+    legendfontsize = legend_font_size,
+    guidefontsize=title_font_size,
+    gridalpha=grid_alpha,
+    gridstyle=grid_style,
+    tickfontsize=tick_font_size,
+    framstyle=:box,
+    legend=:left
+    )
 
-    l = @layout [[a{0.7w} b]; c{0.6h}]
+    l = @layout [[a{0.4w} b]; c{0.6h}]
     x = plot(x3, x2, x1, layout=l)
     push!(plot_list, x)
 end
 
 l = @layout [grid(2,1)]
-plt = plot(plot_list..., layout=l)
-plot!(size=(1200,1600))
-display(plt)
-savefig(plt, solutions_dir*"plot.png")
+plt = plot(plot_list..., layout=l, size=(2000,3000))
+savefig(plt, solutions_dir*"plot2.png")
+savefig(plt, solutions_dir*"plot2.pdf")

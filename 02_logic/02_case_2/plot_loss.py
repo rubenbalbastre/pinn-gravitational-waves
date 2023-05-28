@@ -132,23 +132,24 @@ sns.set_context(font_scale=1.25)
 
 # m1 \neq m2
 
-# fpath = "../../01_data/02_output/02_case_2/1_system/"
+fpath = "../../01_data/02_output/02_case_2/1_system/"
 
-# df_original = pd.read_csv(fpath + "metrics/losses.csv")
-# df = df_original.rename(columns={'split': 'conjunto'})
-# dropout_list = ["prueba_tonta_2/"]
-# df = df[df['test_name'].isin(dropout_list + ["architecture_1_act__tanh/"])]
-# df = df.melt(id_vars=['test_name', 'epochs'], value_vars=["test_metric", "train_metric"], var_name="conjunto", value_name="loss")
-# df["conjunto"] = df["conjunto"].apply(lambda x: "entrenamiento" if x == "train_metric" else "test")
-# df = df[df["conjunto"] == "entrenamiento"]
-# df["conjunto"] = df["test_name"].apply(lambda x: "SXS:BBH:0211" if x == "architecture_1_act__tanh/" else "SXS:BBH:0168")
+df_original = pd.read_csv(fpath + "metrics/losses_copy.csv")
+df = df_original.rename(columns={'split': 'conjunto'})
+dropout_list = ["prueba_tonta_2/"]
+df = df[df['test_name'].isin(dropout_list + ["architecture_1_act__tanh/"])]
+df = df.melt(id_vars=['test_name', 'epochs'], value_vars=["test_metric", "train_metric"], var_name="conjunto", value_name="loss")
+df["conjunto"] = df["conjunto"].apply(lambda x: "entrenamiento" if x == "train_metric" else "test")
+df = df[df["conjunto"] == "entrenamiento"]
+df["conjunto"] = df["test_name"].apply(lambda x: "SXS:BBH:0217" if x == "architecture_1_act__tanh/" else "SXS:BBH:0168")
 
-# fig, ax1 = plt.subplots(nrows=1, figsize=(5,3))
-# ax1.set_xlabel("Epochs")
-# ax1.set_ylabel("MSE")
-# # ax1.set_yscale("log")
-# sns.lineplot(data=df, x="epochs", y="loss", hue="conjunto", estimator=np.min, ax=ax1)
-# sns.move_legend(ax1, "upper left", bbox_to_anchor=(1, 1))
-# plt.tight_layout()
-# plt.show()
-# fig.savefig(fpath+"figures/mse_epochs_prueba_tonta.png")
+fig, ax = plt.subplots(figsize=(7,3))
+ax.set_xlabel("Épocas")
+ax.set_ylabel("MSE")
+sns.lineplot(data=df, x="epochs", y="loss", hue="conjunto")
+plt.legend(title="sistema")
+plt.grid()
+plt.tight_layout()
+plt.show()
+fig.savefig(fpath+"figures/mse_epochs_prueba_tonta.png")
+fig.savefig(fpath+"figures/mse_epochs_prueba_tonta.pdf")

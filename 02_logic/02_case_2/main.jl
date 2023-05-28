@@ -15,6 +15,7 @@ using CSV
 using BSON: @save, @load
 using Flux
 import Logging
+using Random
 include("../04_utils/orbital_mechanics_utils.jl");
 include("../04_utils/input_preparation.jl");
 include("../04_utils/models.jl");
@@ -24,6 +25,9 @@ include("../04_utils/loss_functions.jl")
 include("../04_utils/output.jl")
 include("../04_utils/nn_models.jl")
 Logging.disable_logging(Logging.Warn)
+
+seed = 1234;
+Random.seed!(seed)
 
 # script conditions
 show_plots = true
@@ -40,8 +44,8 @@ dt = 10.0
 wave_id = [
     # "SXS:BBH:0169",
     # "SXS:BBH:0168",
-    "SXS:BBH:0211",
-    "SXS:BBH:0217",
+    # "SXS:BBH:0211",
+    # "SXS:BBH:0217",
 ]
 
 train_array, test, train, wave_id_dict = load_data(wave_id)
@@ -60,7 +64,7 @@ grid_style=:dot;
 
 for n_neurons in [32]
     test_name = "architecture_1__"*string(n_neurons)*"/"
-    # test_name = "prueba_tonta/"
+    test_name = "sxsbbh0168/"
     output_directory = "../../01_data/02_output/02_case_2/1_system/"
     output_dir = output_directory*test_name
 
@@ -258,7 +262,7 @@ for n_neurons in [32]
                 top_margin = 25Plots.mm,
             )
             plot!(plt1, tsteps_train_complete, pred_waveform_real_train_complete, linewidth=line_width, label="NN test (Re)", legend_position=:topleft, title= "Train progress: "*wave_id_dict[length(wave_id)], color=:orange) 
-            plot!(plt1, tsteps_train_complete[1:N], pred_waveform_real_train_complete[1:N], linewidth=line_width, label="NN train (Re)")
+            plot!(plt1, tsteps_train_complete[1:N], pred_waveform_real_train_complete[1:N], linewidth=line_width, label="NN train (Re)", color=1)
 
             # test waveform
             plt12 = plot(
@@ -304,6 +308,7 @@ for n_neurons in [32]
                 left_margin = 25Plots.mm,
                 right_margin = 25Plots.mm,
                 top_margin = 25Plots.mm,
+                xlabel="Tiempo"
                 )
             plot!(twinx(), tsteps_train, e, color=:orange, linewidth = line_width, label="e",
             titlefontsize = title_font_size,
@@ -311,7 +316,9 @@ for n_neurons in [32]
             guidefontsize=title_font_size,
             gridalpha=grid_alpha,
             gridstyle=grid_style,
-            tickfontsize=tick_font_size,)
+            tickfontsize=tick_font_size,
+            framestyle=:box,
+            )
 
             # p,e test
             p = pred_sol_test[3,:]
@@ -329,6 +336,7 @@ for n_neurons in [32]
                 left_margin = 25Plots.mm,
                 right_margin = 25Plots.mm,
                 top_margin = 25Plots.mm,
+                xlabel="Tiempo"
             )
             plot!(twinx(), tsteps_test, e, color=:orange, linewidth = line_width, label="e",
             titlefontsize = title_font_size,
@@ -336,7 +344,8 @@ for n_neurons in [32]
             guidefontsize=title_font_size,
             gridalpha=grid_alpha,
             gridstyle=grid_style,
-            tickfontsize=tick_font_size,)
+            tickfontsize=tick_font_size,
+            framestyle=:box,)
 
             # losses plot
             plt5 = plot(
@@ -361,8 +370,10 @@ for n_neurons in [32]
             plot!(plt5, test_losses, label="test", linewidth=line_width)
 
             # save plots
-            l = @layout [[[a{0.7w} b]; [a{0.7w} b]] a{0.2w}]
-            global plt = plot(plt1, plt3, plt12, plt4, plt5, layout=l, size=(3000,1500))
+            # l = @layout [[[a{0.7w} b]; [a{0.7w} b]] a{0.2w}]
+            l = @layout [[a{0.7w} b]; [a{0.7w} b]]
+            # global plt = plot(plt1, plt3, plt12, plt4, plt5, layout=l, size=(3000,1500))
+            global plt = plot(plt1, plt3, plt12, plt4, layout=l, size=(3000,1500))
             display(plt)
             if save_plots_gif
                 push!(plot_list, plt)
@@ -377,7 +388,7 @@ for n_neurons in [32]
     num_optimization_increments = 100
     optimization_increments = [collect(40:10:num_optimization_increments-15)..., 85, 90, num_optimization_increments-5, num_optimization_increments-1,  num_optimization_increments]
     n = length(optimization_increments)
-    epochs_increments = [50,50,50,50,50,50,50,50,100,250]
+    epochs_increments = [50,50,50,50,50,50,50,50,100,450]
     @assert length(epochs_increments) == length(optimization_increments)
 
     for (index, i) in enumerate(optimization_increments)
@@ -521,6 +532,7 @@ for n_neurons in [32]
         if save_plots_gif
             for (ind, img) in enumerate(plot_list)
                 savefig(img, img_dir*string(ind)*"_train_img.png")
+                savefig(img, img_dir*string(ind)*"_train_img.pdf")
             end
         end
 
