@@ -26,7 +26,12 @@ include("../04_utils/plots.jl")
 include("../04_utils/loss_functions.jl")
 include("../04_utils/output.jl")
 include("../04_utils/nn_models.jl")
+include("../04_utils/create_ode_problems.jl")
+include("../04_utils/plot_conditions.jl")
+include("../04_utils/utils.jl")
 
+
+# specify random seed
 seed = 1234;
 Random.seed!(seed)
 
@@ -34,176 +39,78 @@ Random.seed!(seed)
 show_plots = true
 save_plots_gif = true
 save_data = true
-# [2, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 200]
 test_name = "test_1_cos/"
 model_name = "test_1_cos/"
 output_directory = "../../01_data/02_output/01_case_1/case_1_system/"
 output_dir = output_directory*test_name
 solutions_dir = output_dir*"solutions/"
 metrics_dir = output_directory*"metrics/"
+img_dir = output_dir*"train_img_for_gif/"
+list_directories = (output_dir, solutions_dir, metrics_dir, img_dir)
+create_directories(list_directories)
 
-# Define the experimental parameters
-global datasize = 250
-global mass_ratio = 0.0
-global dt = 100.0
-
-## Define neural network model
+# Define neural network model
 NN, NN_params, chain, re = nn_model_case1(model_name)
 
-@info "Generating exact solution..."
+# --------------------------------------
+
+datasize = 250
+mass_ratio = 0.0
+dt = 100.0
+
 # TRAIN
 χ₀ = pi; ϕ₀ = 0.0; p=100; M=1.0; e=0.5
-u0_train = Float64[χ₀, ϕ₀]
-global tspan_train = (0.0f0, 6.0f4)
-global tsteps_train = range(tspan_train[1], tspan_train[2], length = datasize)
-dt_data_train = tsteps_train[2] - tsteps_train[1]
-global model_params_train = [p, M, e]
+tspan_train = (0.0f0, 6.0f4)
 
-function ODE_model_train(u, NN_params, t)
-    du = AbstractNNOrbitModel(u, model_params_train, t, NN=NN, NN_params=NN_params)
-    return du
-end
-
-prob_train = ODEProblem(RelativisticOrbitModel, u0_train, tspan_train, model_params_train)
-exact_sol_train = Array(solve(prob_train, RK4(), saveat = tsteps_train, dt = dt, adaptive=false))
-exact_waveform_train = compute_waveform(dt_data_train, exact_sol_train, mass_ratio, model_params_train)[1]
+@info "Train dataset creation"
+train_info = get_exact_solution(χ₀, ϕ₀, p, M, e, mass_ratio, tspan_train, dt)
 
 # TEST
 χ₀ = pi; ϕ₀ = 0.0; p=100; M=1.0; e=0.5
-u0_test = Float64[χ₀, ϕ₀]
 factor = 5
-global tspan_test = (tspan_train[2], factor*tspan_train[2])
-global tsteps_test = range(tspan_test[1], tspan_test[2], length = datasize*factor)
-dt_data_test = tsteps_test[2] - tsteps_test[1]
-global model_params_test = [p, M, e]
+tspan_test = (tspan_train[2], tspan_train[2])
 
-function ODE_model_test(u, NN_params, t)
-    du = AbstractNNOrbitModel(u, model_params_test, t, NN=NN, NN_params=NN_params)
-    return du
-end
+@info "Test dataset creation"
+test_info = get_ode_problem(χ₀, ϕ₀, p, M, e, tspan_test)
 
-prob_test = ODEProblem(RelativisticOrbitModel, u0_test, tspan_test, model_params_test)
-exact_sol_test = Array(solve(prob_test, RK4(), saveat = tsteps_test, dt = dt, adaptive=false))
-exact_waveform_test = compute_waveform(dt_data_test, exact_sol_test, mass_ratio, model_params_test)[1]
+# put data in arrays
+@info "Processing datasets"
+datasets = (train_info, test_info)
+processed_data = process_datasets(datasets)
 
-prob_nn_train = ODEProblem(ODE_model_train, u0_train, tspan_train, NN_params)
-prob_nn_test = ODEProblem(ODE_model_test, u0_test, tspan_test, NN_params)
-
-# put data into arrays
-exact_waveform_train_array = [exact_waveform_train, exact_waveform_test]
-tsteps_train_array = [tsteps_train, tsteps_test]
-model_params_train_array = [model_params_train, model_params_test]
-u0_train_array = [u0_train, u0_test]
-dt_data_train_array = [dt_data_train, dt_data_test]
-
-title_font_size = 24;
-legend_font_size = 18;
-line_width=3;
-tick_font_size = title_font_size;
-grid_alpha=0.4;
-grid_style=:dot;
-
+# --------------------------------------
 
 # zero training image
-img_dir = output_dir*"train_img_for_gif/"
-NN_params = 0 .* NN_params
-pred_sol = Array(solve(remake(prob_nn_train, u0=u0_train, p = NN_params, tspan=tspan_train), RK4(), saveat = tsteps_train, dt = dt, adaptive=false))
-pred_waveform_real_train = compute_waveform(dt_data_train, pred_sol, mass_ratio, model_params_train)[1]
+@info "Generating zero training steps image"
 
-N = length(tsteps_train)
-plt1 = plot(
-    tsteps_train, exact_waveform_train, label="datos (Re)", title= "Predicción de la forma de onda en sistema de entrenamiento", 
-        titlefontsize = title_font_size,
-        legendfontsize = legend_font_size,
-        guidefontsize=title_font_size,
-        gridalpha=grid_alpha,
-        gridstyle=grid_style,
-        tickfontsize=tick_font_size,
-        color=:black,
-        seriestype=:scatter,
-        ms=5,
-        markershape=:none,
-        size=(1200,350),
-        bottom_margin = 25Plots.mm,
-        left_margin = 25Plots.mm,
-        right_margin = 10Plots.mm,
-        top_margin = 10Plots.mm,
-        framestyle=:box,
-        legend=:outertop, legend_column=2,
-        xlabel="Tiempo",
-        ylabel="Forma de onda"
-    )
+# NN_params = 0 .* NN_params # is it needed¿?
+zero_training_solution = Array(solve(remake(train_info["nn_problem"], u0=u0_array[1], p = NN_params, tspan=tspan_array[1]), RK4(), saveat = tsteps_array[1], dt = dt, adaptive=false))
+zero_training_waveform = compute_waveform(dt_data_array[1], zero_training_solution, mass_ratio, model_params_array[1])[1]
 
-plot!(plt1, tsteps_train[1:N], pred_waveform_real_train[1:N], label="NN entrenamiento (Re)", linewidth=line_width)
-plt = plot(plt1, size=(1600,600))
-savefig(plt, img_dir*"0_train_img.pdf")
-savefig(plt, img_dir*"0_train_img.png")
+zero_training_plt = train_plot(tsteps_train_array[1], exact_waveform_train_array[1], zero_training_waveform)
 
-# loss function
-coef_data = 1.0
-coef_weights = 1.0
+savefig(zero_training_plt, img_dir*"0_train_img.pdf")
+savefig(zero_training_plt, img_dir*"0_train_img.png")
 
-function loss(
-    NN_params;
-    exact_waveform_train_array,
-    exact_waveform_test,
-    prob_nn_train,
-    prob_nn_test,
-    u0_train_array,
-    u0_test,
-    tsteps_train_array,
-    tspan_test,
-    tsteps_test,
-    dt_data_train_array,
-    dt_data_test,
-    model_params_train_array,
-    model_params_test
-)
-    # train loss 
-    local train_loss = 0
-    local number_of_waveforms = length(exact_waveform_train)
 
-    for wave_index in [1]# range(2, number_of_waveforms)
+# --------------------------------------
 
-        global exact_waveform_train = exact_waveform_train_array[wave_index]
-        global tsteps_train = tsteps_train_array[wave_index]
-        global tspan_train = (tsteps_train[1], tsteps_train[end])
-        global model_params_train = model_params_train_array[wave_index]
-        global u0_train = u0_train_array[wave_index]
-        global dt_data_train = dt_data_train_array[wave_index]
+# # loss function
+# coef_data = 1.0
+# coef_weights = 1.0
 
-        global pred_sol_train = Array(solve(remake(prob_nn_train, u0=u0_train, p = NN_params, tspan=tspan_train), RK4(), saveat = tsteps_train, dt = dt, adaptive=false))
-        global train_res_i = loss_function_case1(pred_sol_train, exact_waveform_train, dt_data_train, model_params_train, NN_params, coef_data=coef_data, coef_weights=coef_weights)
-
-        train_loss += abs(train_res_i[1])
-    end
-
-    # Test loss
-    pred_sol_test = Array(solve(remake(prob_nn_test, u0=u0_test, p = NN_params, tspan=tspan_test), RK4(), saveat = tsteps_test, dt = dt, adaptive=false))
-    test_res = loss_function_case1(pred_sol_test, exact_waveform_test, dt_data_test, model_params_test, NN_params, coef_data=coef_data, coef_weights=coef_weights)
-    train_loss = train_loss / number_of_waveforms
-
-    global custom_act_function_coef = NN_params[1:4]
-
-    return [train_loss, train_res_i, test_res] # we must give the loss value as first argument
-end
 
 const train_losses = []
 const test_losses = []
 const train_metrics = []
 const test_metrics = []
+const plot_list = []
 
-callback(θ, train_loss, train_res_i, test_res; show_plots = show_plots, save_plots_gif=save_plots_gif) = begin
-
-    # list to save plots -> make a gif to project presentation
-    if length(train_losses) == 0
-        global plot_list = []
-    end
+callback_EMR(θ, train_loss, train_res_i, test_res; show_plots = show_plots, save_plots_gif=save_plots_gif) = begin
 
     # unpackage training results
     train_loss, train_metric, pred_waveform_real_train = train_res_i
     test_loss, test_metric, pred_waveform_real_test = test_res
-    N = length(tsteps_train)
 
     # add losses
     push!(train_losses, train_loss)
@@ -212,58 +119,17 @@ callback(θ, train_loss, train_res_i, test_res; show_plots = show_plots, save_pl
     push!(test_metrics, test_metric)
 
     # train waveform
-    plt1 = plot(
-        tsteps_train, exact_waveform_train, label="datos (Re)", title= "Predicción de la forma de onda en sistema de entrenamiento", 
-            titlefontsize = title_font_size,
-            legendfontsize = legend_font_size,
-            guidefontsize=title_font_size,
-            gridalpha=grid_alpha,
-            gridstyle=grid_style,
-            tickfontsize=tick_font_size,
-            color=:black,
-            seriestype=:scatter,
-            ms=5,
-            markershape=:none,
-            size=(1200,350),
-            bottom_margin = 25Plots.mm,
-            left_margin = 25Plots.mm,
-            right_margin = 10Plots.mm,
-            top_margin = 10Plots.mm,
-            framestyle=:box,
-            legend=:outertop, legend_column=2,
-            xlabel="Tiempo",
-            ylabel="Forma de onda"
-        )
+    plt1 = train_plot(tsteps_train, exact_waveform_train, pred_waveform_real_train)
 
-    plot!(plt1, tsteps_train[1:N], pred_waveform_real_train[1:N], label="NN entrenamiento (Re)", linewidth=line_width)
-    
     # test waveform
-    plt12 = plot(
-        tsteps_test, exact_waveform_test,  label="datos (Re)", title= "Predicción de la forma de onda en sistema de test", 
-        titlefontsize = title_font_size,
-        legendfontsize = legend_font_size,
-        gridalpha=grid_alpha,
-        gridstyle=grid_style,
-        tickfontsize=tick_font_size,
-        linewidth=line_width,
-        size=(1200,350),
-        framestyle=:box,
-        legend=false
-        )
-    
-    plot!(plt12, tsteps_test[1:end], pred_waveform_real_test[1:end], label="NN test (Re)")
-    plot!(plt12, tsteps_test[1:N], pred_waveform_real_test[1:N], label="NN entrenamiento (Re)")
-    
-    # losses plot
-    plt3 = plot(train_losses, label="entrenamiento", title="Función de coste", yaxis=:log)
-    plot!(plt3, test_losses, label="test")
+    plt2 = test_plot(tsteps_train, tspan_test, exact_waveform_test, pred_waveform_real_test)
 
-    # save plots
+    # losses plot
+    plt3 = losses_plot(train_losses, test_losses)
+
     # l = @layout [[a; b] a]
-    # global plt = plot(plt1, plt12, plt3, layout=l) # plt4 plt2, plt3
-    # l = @layout [a; b]
-    # global plt = plot(plt1, plt12, layout=l, size=(1200,800))
-    global plt = plot(plt1, size=(1600,600))
+    # global plt = plot(plt1, plt2, plt3, layout=l)
+    plt = plot(plt1, size=(1600,600))
     if save_plots_gif
         push!(plot_list, plt)
     end
@@ -272,44 +138,33 @@ callback(θ, train_loss, train_res_i, test_res; show_plots = show_plots, save_pl
     return false
 end
 
+
+# --------------------------------------
+
 # Train
-println("Training...")
+
 # NN_params = NN_params + Float64(1e-3)*randn(eltype(NN_params), size(NN_params))
-loss_f(p) = loss(p, 
-    exact_waveform_train_array=exact_waveform_train_array,
-    exact_waveform_test=exact_waveform_test,
-    prob_nn_train=prob_nn_train,
-    prob_nn_test=prob_nn_test,
-    u0_train_array=u0_train_array,
-    u0_test=u0_test,
-    tsteps_train_array=tsteps_train_array,
-    tspan_test=tspan_test,
-    tsteps_test=tsteps_test,
-    dt_data_train_array=dt_data_train_array,
-    dt_data_test=dt_data_test,
-    model_params_train_array=model_params_train_array,
-    model_params_test=model_params_test
-)
+loss_f(p) = loss_function_EMR(p, processed_data=processed_data, train_info=train_info, test_info=test_info)
+
 # optimisers 
 # Flux.Optimise.Descent(0.001)
 # Flux.Optimise.ADAM(5e-5, (0.9, 0.999)), 
 # Flux.Optimise.RADAM(1e-4, (0.9, 0.999)),
 # BFGS(initial_stepnorm=0.01, linesearch = LineSearches.BackTracking()),
+
+println("Start Training")
 res = DiffEqFlux.sciml_train(
-    loss_f, NN_params,
+    loss_f, 
+    NN_params,
     BFGS(initial_stepnorm=0.01, linesearch = LineSearches.BackTracking()), 
-    cb=callback, maxiters = 200)
+    cb=callback_EMR, 
+    maxiters = 200
+)
+
+
+# --------------------------------------
 
 # save flux chain models as bson files. To do so, we must save chain model with its parameters
-if !isdir(output_dir)
-    mkdir(output_dir)
-end
-if ! isdir(solutions_dir)
-    mkdir(solutions_dir)
-end
-if ! isdir(metrics_dir)
-    mkdir(metrics_dir)
-end
 Flux.loadparams!(chain, Flux.params(re(res.minimizer)))
 @save solutions_dir*"model_chiphi.bson" chain
 
@@ -326,6 +181,7 @@ losses_df = DataFrame(
     # pen="l2",
     # conf="g1_1__g2_15"
 )
+
 if ! isfile(metrics_dir*"losses.csv")
     CSV.write(metrics_dir*"losses.csv", losses_df)
 else
@@ -334,66 +190,18 @@ else
     CSV.write(metrics_dir*"losses.csv", x)
 end
 
-# # Learned solutions
-# println("Compute final solutions")
-# time_spec = (tsteps_train, tspan_train, dt, dt_data_train)
-# learned = compute_learned_solutions_case1(time_spec, prob_train, prob_nn, model_params, mass_ratio)
-# df_learned_trajectories, df_learned_waveforms = learned
 
-# # Extrapolated solutions
-# time_spec = (datasize, tspan, dt, dt_data)
-# predictions = compute_extrapolated_solutions_case1(time_spec, prob_train, prob_nn, model_params, mass_ratio)
-# df_predicted_trajectories, df_predicted_waveforms = predictions
-
-# compute metrics
-# metrics_df = compute_metrics(
-#     test_name,
-#     datasize,
-#     df_predicted_waveforms, df_predicted_trajectories, df_learned_waveforms, df_learned_trajectories)
-
-# plt = final_plot_case1(
-#     df_learned_trajectories, df_learned_waveforms, df_predicted_trajectories, df_predicted_waveforms,
-#     train_losses, test_losses, show_plots
-# )
-
-# save results
 if save_data
-
-    # naming dirs
-    solutions_dir = output_dir*"solutions/"
-    img_dir = output_dir*"train_img_for_gif/"
-    metrics_dir = output_directory*"metrics/"
-
-    # checking if directories exist
-    if ! isdir(img_dir)
-        mkdir(img_dir)
-    end
-
+    @info "Save train images"
     # save plots
     for (ind, img) in enumerate(plot_list)
         savefig(img, img_dir*string(ind)*"_train_img.pdf")
         savefig(img, img_dir*string(ind)*"_train_img.png")
+        if ind == length(plot_list)
+            savefig(img, output_dir*"prediction_plot.pdf")
+            savefig(img, output_dir*"prediction_plot.png")
+        end
     end
-
-    # save final plot
-    savefig(plt, output_dir*"prediction_plot.pdf")
-
-    # # save metrics
-    # if ! isfile(metrics_dir*"metrics.csv")
-    #     CSV.write(metrics_dir*"metrics.csv", metrics_df)
-    # else
-    #     x = DataFrame(CSV.File(metrics_dir*"metrics.csv"))
-    #     append!(x, metrics_df)
-    #     CSV.write(metrics_dir*"metrics.csv", x)
-    # end
-
-    # # save csv files
-    # CSV.write(solutions_dir*"EMRI_learned_trajectories.csv", df_learned_trajectories)
-    # CSV.write(solutions_dir*"EMRI_predicted_trajectories.csv", df_predicted_trajectories)
-    # CSV.write(solutions_dir*"EMRI_learned_waveforms.csv", df_learned_waveforms)
-    # CSV.write(solutions_dir*"EMRI_predicted_waveforms.csv", df_predicted_waveforms)
-
-    @info "data saved"
 end
 
 @info "Execution finished"
