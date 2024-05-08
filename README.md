@@ -1,6 +1,6 @@
 ## PINN - Gravitational Waves
 
-This repository contains some useful code used to recover the orbits of binary black holes system from its gravitational waveform measurements.
+This repository contains some useful code used to recover the orbits of binary black holes system from its gravitational waveform measurements. Experiments are performed using Julia code but some visualizations, analysis and data extraction are done in Python.
 
 The repository has two main parts: data and code. Its purpose is to be used as a template to be initiated into the problem.
 
