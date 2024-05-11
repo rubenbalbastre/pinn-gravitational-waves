@@ -13,7 +13,7 @@ import pandas as pd
 import numpy as np
 from sys import path
 
-path_to_root_project = "../../../../"
+path_to_root_project = "../../../"
 path.append(path_to_root_project)
 from src.utils.collect_data.simulation_data import Simulation_Data, Sim_IDs
 from src.utils.collect_data.utils import create_directory_if_does_not_exist
