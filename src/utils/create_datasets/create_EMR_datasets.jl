@@ -10,7 +10,7 @@ function get_problem_information_EMR_schwarzschild(χ₀::Float64, ϕ₀::Float6
 
     tsteps = range(tspan[1], tspan[2], length = datasize*factor)
     model_params = [p, M, e, 0.0]
-    dt_data = tsteps[2] - tsteps[1]
+    dt_data = Float64(tsteps[2] - tsteps[1])
 
     function ODE_model(u, NN_params, t)
         du = NNOrbitModel_Schwarzschild_EMR(u, model_params, t, NN=NN, NN_params=NN_params)
@@ -44,7 +44,7 @@ function get_problem_information_EMR_kerr(χ₀::Float64, ϕ₀::Float64, p::Flo
 
     tsteps = range(tspan[1], tspan[2], length = datasize*factor)
     model_params = [p, M, e, a]
-    dt_data = tsteps[2] - tsteps[1]
+    dt_data = Float64(tsteps[2] - tsteps[1])
 
     function ODE_model(u, NN_params, t)
         du = NNOrbitModel_Kerr_EMR(u, model_params, t, NN=NN, NN_params=NN_params)
@@ -67,7 +67,7 @@ function get_problem_information_EMR_kerr(χ₀::Float64, ϕ₀::Float64, p::Flo
 end
 
 
-function get_exact_solution_EMR_schwarzschild(u0::Vector{Float64}, model_params::Vector{Float64}, mass_ratio::Float64, total_mass::Float64, tspan, tsteps, dt_data::Float32, dt::Float64)
+function get_exact_solution_EMR_schwarzschild(u0::Vector{Float64}, model_params::Vector{Float64}, mass_ratio::Float64, total_mass::Float64, tspan, tsteps, dt_data::Float64, dt::Float64)
     """
     Get EMR ODE Problem exact solution
     """
@@ -80,7 +80,7 @@ function get_exact_solution_EMR_schwarzschild(u0::Vector{Float64}, model_params:
 end
 
 
-function get_exact_solution_EMR_kerr(u0::Vector{Float64}, model_params::Vector{Float64}, mass_ratio::Float64, total_mass::Float64, tspan, tsteps, dt_data::Float32, dt::Float64)
+function get_exact_solution_EMR_kerr(u0::Vector{Float64}, model_params::Vector{Float64}, mass_ratio::Float64, total_mass::Float64, tspan, tsteps, dt_data::Float64, dt::Float64)
     """
     Get EMR ODE Problem exact solution
     """
