@@ -24,7 +24,7 @@ Two parts are distinguished here: *src/utils*, which contains the different func
 There are two main experiments:
 
 - **Case 1: Extreme Mass Ratio (EMR) systems**. Both **Schwarzschild** and **Kerr** metrics are proposed resulting in two variants of the same execise.
-- **Case 2: non-EMR systems** of equal masses and non-eccentric orbits.
+- **Case 2: non-EMR systems** of equal masses and non-eccentric orbits on a model based only on **Schwarzschild** metric.
 
 Each block contains 2 Jupyter notebooks:
 - **Training Notebook**: it generates the train and test datasets, trains the PINN and saves the model weights. It had the option to get some intermediate plots and saves a register of loss function for train and test data.
