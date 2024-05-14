@@ -68,11 +68,10 @@ end
 
 
 function get_exact_solution_EMR_schwarzschild(u0::Vector{Float64}, model_params::Vector{Float64}, mass_ratio::Float64, total_mass::Float64, tspan, tsteps, dt_data::Float32, dt::Float64)
-    """e
+    """
     Get EMR ODE Problem exact solution
     """
 
-    println(model_params)
     exact_problem = ODEProblem(RelativisticOrbitModel_Schwarzschild_EMR, u0, tspan, model_params)
     true_solution = Array(solve(exact_problem, RK4(), saveat = tsteps, dt = dt))
     true_waveform, _ = compute_waveform(dt_data, true_solution, mass_ratio, total_mass, model_params)
