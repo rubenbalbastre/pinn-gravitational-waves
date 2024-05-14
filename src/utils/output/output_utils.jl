@@ -6,11 +6,21 @@ function create_outputs_directories(test_name, output_directory)
     metrics_dir = output_directory*"metrics/"
     img_dir = output_dir*"train_img_for_gif/"
     
-    for dir in [output_dir, solutions_dir, metrics_dir, img_dir]
-        if ! isdir(dir)
-            mkdir(dir)
+    create_directories([output_dir, solutions_dir, metrics_dir, img_dir])
+
+    return [output_dir, solutions_dir, metrics_dir]
+end
+
+
+function create_directories(list_directories)
+    """
+    Check if a set of directories are created. If they are not, they are created.
+    """
+
+    for directory in list_directories
+        if !isdir(directory)
+            mkdir(directory)
         end
     end
 
-    return [output_dir, solutions_dir, metrics_dir]
 end

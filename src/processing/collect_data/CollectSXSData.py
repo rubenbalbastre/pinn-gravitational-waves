@@ -15,12 +15,13 @@ from sys import path
 
 path_to_root_project = "../../../"
 path.append(path_to_root_project)
+
 from src.utils.collect_data.simulation_data import Simulation_Data, Sim_IDs
 from src.utils.collect_data.utils import create_directory_if_does_not_exist
 
 
 # path parameters
-output_folder = path_to_root_project + 'data/input/case_3/'
+output_folder = path_to_root_project + 'data/input/case_2/'
 master_data_file_name = '/master_data.csv'
 
 start = time.time()
@@ -68,7 +69,8 @@ IDs_list = [
     # "SXS:BBH:1358",
     # "SXS:BBH:1359",
     # "SXS:BBH:1360",
-    "SXS:BBH:1361",
+    "SXS:BBH:0211",
+    "SXS:BBH:0217"
 ]
 
 create_directory_if_does_not_exist(output_folder)

@@ -4,44 +4,20 @@ Axiliary functions for orbital mechanics
 # using DelimitedFiles
 
 
-function soln2orbit(soln, model_params=nothing)
+function soln2orbit(soln, M, model_params=nothing)
     """
         Performs change of variables:
         (χ(t),ϕ(t)) ↦ (x(t),y(t))
     """
     size_soln = size(soln, 1)
-    if size_soln == 2
-        χ = soln[1,:]
-        ϕ = soln[2,:]
-        if length(model_params) == 2
-            p, M = model_params
-        elseif length(model_params) == 3
-            p, M, e  = model_params
-        elseif length(model_params) == 4
-            p, M, e, a = model_params
-        else
-            error("model_params must have length 3 when size(soln,2) = 2")
-        end
-    elseif size_soln == 4
-        if length(model_params) == 2
-            p, M = model_params
-        end
-        χ = soln[1,:]
-        ϕ = soln[2,:]
-        p = soln[3,:]
-        e = soln[4,:]
 
-    elseif size_soln == 5
-        if length(model_params) == 3
-            p, M, e = model_params
-        end
+    if size_soln == 2 # EMR case
+
+        p, M, e, a = model_params
         χ = soln[1,:]
         ϕ = soln[2,:]
-
-    elseif size_soln == 6
-        if length(model_params) == 2
-            p, M = model_params
-        end
+    
+    elseif size_soln == 4 # non-EMR case
         χ = soln[1,:]
         ϕ = soln[2,:]
         p = soln[3,:]
@@ -55,6 +31,7 @@ function soln2orbit(soln, model_params=nothing)
     y = r .* sin.(ϕ)
 
     orbit = vcat(x',y')
+
     return orbit
 end
 
@@ -189,18 +166,15 @@ function one2two(path, m1, m2)
 end
 
 
-function compute_waveform(dt, soln, mass_ratio, model_params=nothing)
+function compute_waveform(dt, soln, mass_ratio, total_mass, model_params)
+    """
+    Calculate Waveform from solution
+    """
 
     # @assert mass_ratio <= 1.1 "mass_ratio must be <= 1"
     @assert mass_ratio >= 0.0 "mass_ratio must be non-negative"
-
-    if length(model_params) == 2
-        mass_ratio, total_mass = model_params
-    elseif length(model_params) == 3
-        p, total_mass, e = model_params
-    end
     
-    orbit = soln2orbit(soln, model_params)
+    orbit = soln2orbit(soln, total_mass, model_params)
     if mass_ratio > 0
         mass1 = total_mass*mass_ratio/(1.0+mass_ratio)
         mass2 = total_mass/(1.0+mass_ratio)
@@ -222,8 +196,8 @@ function interpolate_time_series(tsteps, tdata, fdata)
     @assert length(tdata) == length(fdata) "lengths of tdata and fdata must match"
 
     interp_fdata = zeros(length(tsteps))
-    for j=1:length(tsteps)
-        for i=1:length(tdata)-1
+    for j in range(1, length(tsteps))
+        for i in range(1, length(tdata)-1)
             if  tdata[i] <= tsteps[j] < tdata[i+1]
                 weight = (tsteps[j] - tdata[i]) / (tdata[i+1] - tdata[i])
                 interp_fdata[j] = (1-weight)*fdata[i] + weight*fdata[i+1]
