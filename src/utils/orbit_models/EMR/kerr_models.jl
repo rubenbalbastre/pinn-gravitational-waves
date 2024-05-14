@@ -123,7 +123,7 @@ function NNOrbitModel_Kerr_EMR(u, model_params, t; NN=nothing, NN_params=nothing
     # TODO: this was introduced to avoid some numerical issues [not sure why this happened]
     drdτ = compute_drdτ_in_kerr_metric(e, χ, p, L, E, r)
 
-    nn = 1 -+ NN(u, NN_params)
+    nn = 1 .+ NN(u, NN_params)
 
     ϕ̇ = dϕdτ / dtdτ * nn[1]
     χ̇ = drdτ / (dtdτ * drdχ) * nn[2]
