@@ -156,6 +156,10 @@ function load_sxs_data(wave_list, folder_directory = "../../data/input/case_2/";
         wave_id_master_data["dt_data"] = dt_data
         wave_id_master_data["tspan"] = tspan_train
         wave_id_master_data["tsteps"] = tsteps_train
+        wave_id_master_data["true_orbit_x1"] = train_x_1
+        wave_id_master_data["true_orbit_y1"] = train_y_1
+        wave_id_master_data["true_orbit_x2"] = train_x_2
+        wave_id_master_data["true_orbit_y2"] = train_y_2
 
         # append data to array
         dataset[wave_id] = wave_id_master_data
