@@ -9,11 +9,13 @@ The purpose of this repository is to be used as a template to be initiated into 
 
 This folder is currently created as an example but note that strictly this should not be uploaded to the repository. 
 
-Two folders (input and output) are contained in data folder. Consequent folders are contained here for each experiment. For example: case_2/schwarzschild/models/test_1_cos. Inside this folder, one will find:
+Two folders (input and output) are contained in data folder. Consequent folders are contained here for each experiment. For example: *case_2/schwarzschild/models/test_1_cos*. Inside this folder, one will find:
 
 - solutions: weights of the neural networks
 - predictions: orbit, equation of motion and waveform predictions as well as true values
 - train_img_for_gif: images of a train and a test waveform for each training epoch
+
+Also, one will find a table in *case_2/schwarzschild/metrics/* called *losses.csv* which keeps record of results for different models in *case_2/schwarzschild/models/*
 
 ### Code
 
@@ -21,12 +23,12 @@ Two parts are distinguished here: *src/utils*, which contains the different func
 
 There are two main experiments:
 
-- Case 1: Extreme Mass Ratio (EMR) systems. Both Schwarzschild and Kerr metrics are proposed resulting in two variants of the same execise.
-- Case 2: non-EMR systems of equal masses and non-eccentric orbits.
+- **Case 1: Extreme Mass Ratio (EMR) systems**. Both **Schwarzschild** and **Kerr** metrics are proposed resulting in two variants of the same execise.
+- **Case 2: non-EMR systems** of equal masses and non-eccentric orbits.
 
 Each block contains 2 Jupyter notebooks:
-- Train Notebook: it generates the train and test datasets, trains the PINN and saves the model weights. It had the option to get some intermediate plots and saves a register of loss function for train and test data.
-- Explore Notebook: it loads the trained model weights and predicts waveforms. It also incorporates some basic plots
+- **Training Notebook**: it generates the train and test datasets, trains the PINN and saves the model weights. It had the option to get some intermediate plots and saves a register of loss function for train and test data.
+- **Exploration Notebook**: it loads the trained model weights and predicts waveforms. It also incorporates some basic plots
 
 Each block also includes one folder named */old/* which contains scripts of old experiments which nowdays don't work due to the repo refactor. In a further update, this will be eliminated or incoporated in the src/utils code.
 
