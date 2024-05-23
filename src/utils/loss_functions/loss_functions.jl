@@ -6,7 +6,7 @@ This script contains the loss functions of the different experiments.
 function loss_function_case1_single_waveform(
     pred_sol::Matrix{Float64},
     true_waveform::Vector{Float64},
-    dt_data::Float32, 
+    dt_data, 
     model_params::Vector{Float64},
     NN_params::Vector{Float64} = nothing;
     tsteps=nothing,
