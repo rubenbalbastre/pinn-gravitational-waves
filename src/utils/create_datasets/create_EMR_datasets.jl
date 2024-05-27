@@ -1,8 +1,8 @@
 
 
-function get_problem_information_EMR_schwarzschild(χ₀::Float64, ϕ₀::Float64, p::Float64, M::Float64, e::Float64,  mass_ratio::Float64, tspan, datasize::Int64, dt::Float64; factor::Int64 = 1)
+function get_pinn_EMR_schwarzschild(χ₀::Float64, ϕ₀::Float64, p::Float64, M::Float64, e::Float64,  mass_ratio::Float64, tspan, datasize::Int64, dt::Float64; factor::Int64 = 1)
     """
-    Get ODE NN problem and exact solution + waveform
+    Get ODE NN problem in schwarzschild metric
     """
 
     u0 = Float64[χ₀, ϕ₀]
@@ -18,25 +18,29 @@ function get_problem_information_EMR_schwarzschild(χ₀::Float64, ϕ₀::Float6
     end
 
     prob_nn = ODEProblem(ODE_model, u0, tspan, NN_params)
-    exact_solution, exact_waveform = get_exact_solution_EMR_schwarzschild(u0, model_params, mass_ratio, M, tspan, tsteps, dt_data, dt)
 
     problem = Dict(
-        "true_solution" => exact_solution, "true_waveform"=> exact_waveform, "nn_problem" => prob_nn, 
-        "tsteps"=> tsteps, "model_params"=> model_params, "u0"=> u0, "dt_data"=> dt_data, "tspan" => tspan,
+        "nn_problem" => prob_nn, 
+        "tsteps"=> tsteps, 
+        "model_params"=> model_params, 
+        "u0"=> u0, 
+        "dt_data"=> dt_data, 
+        "tspan" => tspan,
         "q" => 0.0,
         "p" => p,
         "e" => e,
         "a" => 0.0,
-        "M" => M
+        "M" => M,
+        "dt" => dt
     )
 
     return problem
 end
 
 
-function get_problem_information_EMR_kerr(χ₀::Float64, ϕ₀::Float64, p::Float64, M::Float64, e::Float64, a::Float64,  mass_ratio::Float64, tspan, datasize::Int64, dt::Float64; factor::Int64 = 1)
+function get_pinn_EMR_kerr(χ₀::Float64, ϕ₀::Float64, p::Float64, M::Float64, e::Float64, a::Float64,  mass_ratio::Float64, tspan, datasize::Int64, dt::Float64; factor::Int64 = 1)
     """
-    Get ODE NN problem and exact solution + waveform
+    Get ODE NN problem in Kerr metric
     """
 
     u0 = Float64[χ₀, ϕ₀]
@@ -52,44 +56,49 @@ function get_problem_information_EMR_kerr(χ₀::Float64, ϕ₀::Float64, p::Flo
     end
 
     prob_nn = ODEProblem(ODE_model, u0, tspan, NN_params)
-    exact_solution, exact_waveform = get_exact_solution_EMR_kerr(u0, model_params, mass_ratio, M, tspan, tsteps, dt_data, dt)
 
     problem = Dict(
-        "true_solution" => exact_solution, "true_waveform"=> exact_waveform, "nn_problem" => prob_nn, "tsteps"=> tsteps, "model_params"=> model_params, "u0"=> u0, "dt_data"=> dt_data, "tspan" => tspan,
+        "nn_problem" => prob_nn, 
+        "tsteps"=> tsteps, 
+        "model_params"=> model_params, 
+        "u0"=> u0, 
+        "dt_data"=> dt_data, 
+        "tspan" => tspan,
         "q" => 0.0,
         "M" => M,
         "p" => p,
         "e" => e,
-        "a" => a
+        "a" => a,
+        "dt" => dt
     )
 
     return problem
 end
 
 
-function get_exact_solution_EMR_schwarzschild(u0::Vector{Float64}, model_params::Vector{Float64}, mass_ratio::Float64, total_mass::Float64, tspan, tsteps, dt_data::Float64, dt::Float64)
+function get_true_solution_EMR_schwarzschild(u0::Vector{Float64}, model_params::Vector{Float64}, mass_ratio::Float64, total_mass::Float64, tspan, tsteps, dt_data::Float64, dt::Float64)
     """
-    Get EMR ODE Problem exact solution
+    Computes true solution of a schwarzschild system in Kerr metric
     """
 
     exact_problem = ODEProblem(RelativisticOrbitModel_Schwarzschild_EMR, u0, tspan, model_params)
     true_solution = Array(solve(exact_problem, RK4(), saveat = tsteps, dt = dt))
     true_waveform, _ = compute_waveform(dt_data, true_solution, mass_ratio, total_mass, model_params)
 
-    return true_solution, true_waveform
+    return Dict("true_solution" => true_solution, "true_waveform" => true_waveform)
 end
 
 
-function get_exact_solution_EMR_kerr(u0::Vector{Float64}, model_params::Vector{Float64}, mass_ratio::Float64, total_mass::Float64, tspan, tsteps, dt_data::Float64, dt::Float64)
+function get_true_solution_EMR_kerr(u0::Vector{Float64}, model_params::Vector{Float64}, mass_ratio::Float64, total_mass::Float64, tspan, tsteps, dt_data::Float64, dt::Float64)
     """
-    Get EMR ODE Problem exact solution
+    Computes true solution of a EMR system in Kerr metric
     """
 
     exact_problem = ODEProblem(RelativisticOrbitModel_Kerr_EMR, u0, tspan, model_params)
     true_solution = Array(solve(exact_problem, RK4(), saveat = tsteps, dt = dt, adaptive=false))
     true_waveform, _ = compute_waveform(dt_data, true_solution, mass_ratio, total_mass, model_params)
 
-    return true_solution, true_waveform
+    return Dict("true_solution" => true_solution, "true_waveform" => true_waveform)
 end
 
 
