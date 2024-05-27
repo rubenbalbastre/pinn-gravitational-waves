@@ -21,7 +21,7 @@ function nn_model_case2(test:: String, n_ = 32, activation_function = tanh)
     """
     NN architectures for experiment 2 (non-EMR)
     """
-
+    
     if test == "test/"
 
         chain_chiphi = Chain(
@@ -50,22 +50,6 @@ function nn_model_case2(test:: String, n_ = 32, activation_function = tanh)
             Dense(32, 2)
             )
 
-    elseif test == "test_1_cos/"
-
-    chain_chiphi = Chain(
-        x -> [cos(x[1]),1/abs(x[3]),1/sqrt(abs(x[3])),sqrt(abs(x[3])),x[3],sqrt(abs(x[3]))^3,x[3]^2,x[4],x[4]^2],
-        x -> convert.(Float32, x),
-        Dense(9, 32, cos),
-        Dense(32, 2)
-        )
-
-    chain_pe = Chain(
-        x -> [1/sqrt(abs(x[3]))^3,1/abs(x[3]),1/sqrt(abs(x[3])),sqrt(abs(x[3])),x[3],sqrt(abs(x[3]))^3,x[3]^2,x[4],x[4]^2,x[3]*x[4]],
-        x -> convert.(Float32, x),
-        Dense(10, 32, cos),
-        Dense(32, 2)
-        )
-    
     elseif test == "test_dropout/"
 
         chain_chiphi = Chain(

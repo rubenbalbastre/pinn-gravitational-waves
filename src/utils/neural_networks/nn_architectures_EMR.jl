@@ -1,200 +1,60 @@
 
 
-function nn_model_case1_arch1(n::Int64, f)::Chain
+function process_chain(chain:: Chain; initialize_as_zero::Bool = true)
     """
-    Define multiple configurations of architecture of type 1
+    Extract parameters from chain. By default, initialize them to zero
     """
-    chain = Chain(
-        x -> convert.(Float32, x),
-        x -> [cos(x[1])],
-        x -> convert.(Float32, x),
-        Dense(1, n, f),
-        Dense(n, n, f),
-        Dense(n, 2)
-    )
-    return chain
-end
-
-
-function nn_model_case1_diff_wf(test:: String)::Tuple
-    """
-    NN architectures for experiment 1 of case 1 (EMR)
-    """
-
-    # 01_original
-    if test == "nn1/"
-        chain = Chain(
-            x -> [cos(x[1])],
-            Dense(1, 32, cos),
-            Dense(32, 32, cos),
-            Dense(32, 2)
-        )
-    elseif test == "nn1_pe/"
-        chain = Chain(
-            x -> [cos(x[1]),1/abs(x[3]),1/sqrt(abs(x[3])), 1/(1-x[5]), 1/sqrt(abs(1-x[5])), 1/(1-x[5])^2,sqrt(abs(x[3])),x[3],sqrt(abs(x[3]))^3,x[3]^2,x[4],x[4]^2],
-            Dense(12, 32, cos),
-            Dense(32, 32, cos),
-            Dense(32, 2)
-        )
-    elseif test == "nn2/"
-        chain = Chain(
-            x -> [cos(x[1])],
-            Dense(1, 32, cos),
-            Dense(32, 2)
-        )
-
-    elseif test == "nn2_pe/"
-        chain = Chain(
-            x -> [cos(x[1]),1/abs(x[3]),1/sqrt(abs(x[3])), 1/(1-x[5]), 1/sqrt(abs(1-x[5]^2)), 1/sqrt(abs(1-x[5])), 1/(1-x[5])^2, sqrt(abs(x[3])),x[3],sqrt(abs(x[3]))^3,x[3]^2,x[4],x[4]^2, sin(x[1]), sin(x[1])*cos(x[1])],
-            x -> convert.(Float32, x),
-            Dense(15, 32, cos),
-            Dense(32, 2)
-        )
-
-    elseif test == "nn3_pe/"
-        chain = Chain(
-            x -> [cos(x[1]),1/abs(x[3]),1/sqrt(abs(x[3])), 1/(1-x[5]), 1/sqrt(abs(1-x[5])), 1/(1-x[5])^2,sqrt(abs(x[3])),x[3],sqrt(abs(x[3]))^3,x[3]^2,x[4],x[4]^2],
-            x -> convert.(Float32, x),
-            LSTM(12, 16),
-            Dense(16, 32, cos),
-            Dense(32, 2)
-        )
-
-    elseif test == "nn3/"
-        chain = Chain(
-            x -> [cos(x[1])],
-            x -> convert.(Float32, x),
-            LSTM(1, 16),
-            Dense(16, 32, cos),
-            Dense(32, 2)
-        )
-
-    elseif test == "nn4/"
-        chain = Chain(
-            # x -> [cos(x[1]),1/abs(x[3]),1/sqrt(abs(x[3])), 1/(1-x[5]), 1/sqrt(abs(1-x[5])), 1/(1-x[5])^2, sqrt(abs(x[3])),x[3],sqrt(abs(x[3]))^3,x[3]^2,x[4],x[4]^2, sin(x[1]), sin(x[1])*cos(x[1])],
-            # x -> [cos(x[1]),1/abs(x[3]),1/sqrt(abs(x[3])), 1/(1-x[5]), 1/sqrt(abs(1-x[5])), 1/(1-x[5])^2, sqrt(abs(x[3])),x[3],sqrt(abs(x[3]))^3,x[3]^2,x[4],x[4]^2, sin(x[1]), sin(x[1])*cos(x[1])],
-            x -> [cos(x[1]),1/abs(x[3]),1/sqrt(abs(x[3])), 1/(1-x[5]), 1/sqrt(abs(1-x[5])), 1/(1-x[5])^2,sqrt(abs(x[3])),x[3],sqrt(abs(x[3]))^3,x[3]^2,x[4],x[4]^2],
-            x -> convert.(Float32, x),
-            LSTM(12, 14),
-            Dense(14, 32, cos),
-            Dense(32, 2)
-        )
-        
-    else
-        @error "Architecture non correctly specified"
-    end
 
     NN_params, re = Flux.destructure(chain)
-    NN_params = NN_params .* 0
+
+    if initialize_as_zero
+        println("Initializating weights as zero.")
+        NN_params::Vector{Float64} = NN_params .* 0
+    end
+
     NN(u, NN_params) = re(NN_params)(u)
 
     return NN, NN_params, chain, re
 end
 
 
+function nn_model_case1_arch1(n::Int64, f; type::String = "standard")
+    """
+    Define multiple configurations of architecture of type 1
+    # softmodulusQ, leakyrelu, relu, cos, tanh, abs, sigmoid
+    """
 
-function nn_model_case1(test:: String; n_::Int64=32)
+    if type == "standard"
+        chain = Chain(
+            x -> convert.(Float32, x),
+            x -> [cos(x[1])],
+            x -> convert.(Float32, x),
+            Dense(1, n, f),
+            Dense(n, n, f),
+            Dense(n, 2)
+        )
+    elseif type == "simple"
+        chain = Chain(
+            x -> convert.(Float32, x),
+            x -> [cos(x[1])],
+            x -> convert.(Float32, x),
+            Dense(1, n, f),
+            Dense(n, 2)
+        )
+    end
+
+    NN, NN_params, chain, re = process_chain(chain)
+
+    return NN, NN_params, chain, re
+end
+
+
+function nn_model_case1(test:: String)
     """
     NN architectures for experiment 1
     """
-
-    if test == "test_1_cos/"
-        chain = Chain(
-            x -> convert.(Float32, x),
-            x -> [cos(x[1])],
-            x -> convert.(Float32, x),
-            Dense(1, n_, cos),
-            Dense(n_, n_, cos),
-            Dense(n_, 2)
-        )
-
-    elseif test == "test_1_tanh/"
-        chain = Chain(
-            x -> [cos(x[1])],
-            Dense(1, 32, tanh),
-            Dense(32, 32, tanh),
-            Dense(32, 2)
-        )
-
-    elseif test == "test_1_relu/"
-        chain = Chain(
-            x -> [cos(x[1])],
-            Dense(1, 32, relu),
-            Dense(32, 32, relu),
-            Dense(32, 2)
-        )
-
-    elseif test == "test_1_leaky_relu/"
-        chain = Chain(
-            x -> [cos(x[1])],
-            Dense(1, 32, leakyrelu),
-            Dense(32, 32, leakyrelu),
-            Dense(32, 2)
-        )
-
-    elseif test == "test_1_abs/"
-        chain = Chain(
-            x -> [cos(x[1])],
-            Dense(1, 32, softmodulusQ),
-            Dense(32, 32, softmodulusQ),
-            Dense(32, 2)
-        )
-
-    elseif test == "test_1_sigmoid/"
-        chain = Chain(
-            x -> [cos(x[1])],
-            Dense(1, 32, sigmoid),
-            Dense(32, 32, sigmoid),
-            Dense(32, 2)
-        )
-
-   ########################################################################
-
-    elseif test == "simple_cos/"
-    chain = Chain(
-        x -> [cos(x[1])],
-        Dense(1, 16, cos),
-        Dense(16, 2)
-    )
-
-    elseif test == "simple_tanh/"
-    chain = Chain(
-        x -> [cos(x[1])],
-        Dense(1, 16, tanh),
-        Dense(16, 2)
-    )
-    
-    elseif test == "simple_abs/"
-    chain = Chain(
-        x -> [cos(x[1])],
-        Dense(1, 16, softmodulusQ),
-        Dense(16, 2)
-    )
-
-    elseif test == "simple_relu/"
-    chain = Chain(
-        x -> [cos(x[1])],
-        Dense(1, 16, relu),
-        Dense(16, 2)
-    )
-
-    elseif test == "simple_leaky_relu/"
-    chain = Chain(
-        x -> [cos(x[1])],
-        Dense(1, 16, leakyrelu),
-        Dense(16, 2)
-    )
-
-    elseif test == "simple_sigmoid/"
-    chain = Chain(
-        x -> [cos(x[1])],
-        Dense(1, 16, leakyrelu),
-        Dense(16, 2)
-    )
-
-    ########################################################################
-
-    elseif test == "LSTM_dense/"
+        
+    if test == "LSTM_dense/"
         chain = Chain(
             x -> [cos(x[1])],
             x -> convert.(Float32, x),
@@ -316,9 +176,82 @@ function nn_model_case1(test:: String; n_::Int64=32)
         @error "Architecture non correctly specified" * test
     end
 
-    NN_params, re = Flux.destructure(chain)
-    NN_params::Vector{Float64} = NN_params .* 0
-    NN(u, NN_params) = re(NN_params)(u)
+    NN, NN_params, chain, re = process_chain(chain)
 
     return NN, NN_params, chain, re
 end
+
+
+function nn_model_case1_diff_wf(test:: String)::Tuple
+    """
+    NN architectures for experiment 1 of case 1 (EMR)
+    """
+
+    # 01_original
+    if test == "nn1/"
+        chain = Chain(
+            x -> [cos(x[1])],
+            Dense(1, 32, cos),
+            Dense(32, 32, cos),
+            Dense(32, 2)
+        )
+    elseif test == "nn1_pe/"
+        chain = Chain(
+            x -> [cos(x[1]),1/abs(x[3]),1/sqrt(abs(x[3])), 1/(1-x[5]), 1/sqrt(abs(1-x[5])), 1/(1-x[5])^2,sqrt(abs(x[3])),x[3],sqrt(abs(x[3]))^3,x[3]^2,x[4],x[4]^2],
+            Dense(12, 32, cos),
+            Dense(32, 32, cos),
+            Dense(32, 2)
+        )
+    elseif test == "nn2/"
+        chain = Chain(
+            x -> [cos(x[1])],
+            Dense(1, 32, cos),
+            Dense(32, 2)
+        )
+
+    elseif test == "nn2_pe/"
+        chain = Chain(
+            x -> [cos(x[1]),1/abs(x[3]),1/sqrt(abs(x[3])), 1/(1-x[5]), 1/sqrt(abs(1-x[5]^2)), 1/sqrt(abs(1-x[5])), 1/(1-x[5])^2, sqrt(abs(x[3])),x[3],sqrt(abs(x[3]))^3,x[3]^2,x[4],x[4]^2, sin(x[1]), sin(x[1])*cos(x[1])],
+            x -> convert.(Float32, x),
+            Dense(15, 32, cos),
+            Dense(32, 2)
+        )
+
+    elseif test == "nn3_pe/"
+        chain = Chain(
+            x -> [cos(x[1]),1/abs(x[3]),1/sqrt(abs(x[3])), 1/(1-x[5]), 1/sqrt(abs(1-x[5])), 1/(1-x[5])^2,sqrt(abs(x[3])),x[3],sqrt(abs(x[3]))^3,x[3]^2,x[4],x[4]^2],
+            x -> convert.(Float32, x),
+            LSTM(12, 16),
+            Dense(16, 32, cos),
+            Dense(32, 2)
+        )
+
+    elseif test == "nn3/"
+        chain = Chain(
+            x -> [cos(x[1])],
+            x -> convert.(Float32, x),
+            LSTM(1, 16),
+            Dense(16, 32, cos),
+            Dense(32, 2)
+        )
+
+    elseif test == "nn4/"
+        chain = Chain(
+            # x -> [cos(x[1]),1/abs(x[3]),1/sqrt(abs(x[3])), 1/(1-x[5]), 1/sqrt(abs(1-x[5])), 1/(1-x[5])^2, sqrt(abs(x[3])),x[3],sqrt(abs(x[3]))^3,x[3]^2,x[4],x[4]^2, sin(x[1]), sin(x[1])*cos(x[1])],
+            # x -> [cos(x[1]),1/abs(x[3]),1/sqrt(abs(x[3])), 1/(1-x[5]), 1/sqrt(abs(1-x[5])), 1/(1-x[5])^2, sqrt(abs(x[3])),x[3],sqrt(abs(x[3]))^3,x[3]^2,x[4],x[4]^2, sin(x[1]), sin(x[1])*cos(x[1])],
+            x -> [cos(x[1]),1/abs(x[3]),1/sqrt(abs(x[3])), 1/(1-x[5]), 1/sqrt(abs(1-x[5])), 1/(1-x[5])^2,sqrt(abs(x[3])),x[3],sqrt(abs(x[3]))^3,x[3]^2,x[4],x[4]^2],
+            x -> convert.(Float32, x),
+            LSTM(12, 14),
+            Dense(14, 32, cos),
+            Dense(32, 2)
+        )
+        
+    else
+        @error "Architecture non correctly specified"
+    end
+
+    NN, NN_params, chain, re = process_chain(chain)
+
+    return NN, NN_params, chain, re
+end
+
