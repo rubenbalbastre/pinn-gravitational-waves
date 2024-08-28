@@ -49,6 +49,23 @@ function nn_model_case1_arch1(n::Int64, f; type::String = "standard")
 end
 
 
+function nn_kans_case1()
+    """
+    Kolmogorov-Arnold Neural Networks -> WIP
+    """
+
+    chain = Chain(
+        x -> [x[1], x[1]],
+        x -> convert.(Float32, x),
+        kan.KAN([2, 3, 2]; grid_size=5, spline_order=3, scale_base=1.0, base_activation=relu), # last -> output size, first -> input size
+    )
+
+    NN, NN_params, chain, re = process_chain(chain)
+
+    return NN, NN_params, chain, re
+end
+
+
 function nn_model_case1(test:: String)
     """
     NN architectures for experiment 1
