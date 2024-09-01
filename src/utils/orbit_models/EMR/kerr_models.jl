@@ -34,7 +34,7 @@ function L_kerr(p::Float64, e::Float64, M::Float64, a::Float64)::Float64
 end
 
 
-function compute_drdτ_in_kerr_metric(e::Float64, χ::Float64, p::Float64, L::Float64, E::Float64, r::Float64)::Float64
+function compute_drdτ_in_kerr_metric(a::Float64, e::Float64, χ::Float64, p::Float64, L::Float64, E::Float64, r::Float64)::Float64
     """
     Compute in a way such taht numerical issues are avoided [not sure why this happened]
 
@@ -85,7 +85,7 @@ function RelativisticOrbitModel_Kerr_EMR(u, model_params, t)
     dtdτ = ((r^2 + a^2 + 2*M*a^2/r)*E - 2*M*a*L/r) / Δ
 
     # TODO: this was introduced to avoid some numerical issues [not sure why this happened]
-    drdτ = compute_drdτ_in_kerr_metric(e, χ, p, L, E, r)
+    drdτ = compute_drdτ_in_kerr_metric(a, e, χ, p, L, E, r)
 
     ϕ̇ = dϕdτ / dtdτ
     χ̇ = drdτ / (dtdτ * drdχ)
@@ -121,7 +121,7 @@ function NNOrbitModel_Kerr_EMR(u, model_params, t; NN=nothing, NN_params=nothing
     dtdτ = ((r^2 + a^2 + 2*M*a^2/r)*E - 2*M*a*L/r) / Δ
 
     # TODO: this was introduced to avoid some numerical issues [not sure why this happened]
-    drdτ = compute_drdτ_in_kerr_metric(e, χ, p, L, E, r)
+    drdτ = compute_drdτ_in_kerr_metric(a, e, χ, p, L, E, r)
 
     nn = 1 .+ NN(u, NN_params)
 
