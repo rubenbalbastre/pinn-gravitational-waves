@@ -1,5 +1,44 @@
 
 
+function get_pinn_EMR_schwarzschild_modified(χ₀::Float64, ϕ₀::Float64, p::Float64, M::Float64, e::Float64, a,  mass_ratio::Float64, tspan, datasize::Int64, dt::Float64; factor::Int64 = 1)
+    """
+    Get ODE NN problem in schwarzschild metric modified (includes spin parameter a)
+    """
+
+    u0 = Float64[χ₀, ϕ₀]
+    tspan = (tspan[1], factor*tspan[2])
+
+    tsteps = range(tspan[1], tspan[2], length = datasize*factor)
+    model_params = [p, M, e, a]
+    dt_data = Float64(tsteps[2] - tsteps[1])
+
+    function ODE_model(u, NN_params, t)
+        du = NNOrbitModel_Schwarzschild_modified_EMR(u, model_params, t, NN=NN, NN_params=NN_params)
+        return du
+    end
+
+    prob_nn = ODEProblem(ODE_model, u0, tspan, NN_params)
+
+    problem = Dict(
+        "nn_problem" => prob_nn, 
+        "tsteps"=> tsteps, 
+        "model_params"=> model_params, 
+        "u0"=> u0, 
+        "dt_data"=> dt_data, 
+        "tspan" => tspan,
+        "q" => 0.0,
+        "p" => p,
+        "e" => e,
+        "a" => 0.0,
+        "M" => M,
+        "dt" => dt
+    )
+
+    return problem
+end
+
+
+
 function get_pinn_EMR_schwarzschild(χ₀::Float64, ϕ₀::Float64, p::Float64, M::Float64, e::Float64,  mass_ratio::Float64, tspan, datasize::Int64, dt::Float64; factor::Int64 = 1)
     """
     Get ODE NN problem in schwarzschild metric
