@@ -38,7 +38,7 @@ end
 
 function compute_drdτ_in_kerr_metric(e::Float64, χ::Float64, p::Float64, L::Float64, E::Float64, r::Float64)::Float64
     """
-    Compute in a way such taht numerical issues are avoided [not sure why this happened]
+    Compute in a way such that numerical issues are avoided [not sure why this happened]
 
     Original formula:
     x = (r^2*E^2 + 2*M*(a*E-L)^2/r + (a^2*E^2 - L^2) - Δ)/r^2
@@ -46,19 +46,12 @@ function compute_drdτ_in_kerr_metric(e::Float64, χ::Float64, p::Float64, L::Fl
 
     x_1 = e * sin(χ) * sqrt( (p-6-2*e*cos(χ))/(p*(p-3-e^2)))
 
-    if x_1 < 0
-        x1 = - (x_1)^2
-    else
-        x1=x_1^2
-    end
+    x1 = x_1^2
 
     x2 = (2*M/r*(2*a*E*L+a^2*E^2) + a^2*(E^2 - 1))/r^2
     x = x1 + x2
+    drdτ = real(sqrt(x))
 
-    drdτ = real(sqrt(Complex(x)))
-    if drdτ == 0.0
-        drdτ = -imag(sqrt(Complex(x)))
-    end
 
     return drdτ
 
