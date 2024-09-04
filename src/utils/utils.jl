@@ -19,10 +19,12 @@ function import_project_utils(utils_path)
 
         "neural_networks/nn_architectures.jl",
         "neural_networks/nn_architectures_EMR.jl",
+        "neural_networks/nn_architectures_modified.jl",
 
         "orbit_models/case_2/schwarzschild_models.jl",
         "orbit_models/EMR/kerr_models.jl",
         "orbit_models/EMR/schwarzschild_models.jl",
+        "orbit_models/EMR/schwarzschild_modified.jl",
 
         "orbital_mechanics/orbital_mechanics_utils.jl", 
 
