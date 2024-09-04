@@ -6,14 +6,14 @@ grid_alpha=0.4;
 grid_style=:dot;
 
 
-function train_plot(tsteps, true_waveform, predicted_waveform, true_label="datos (Re)", predict_label = "NN entrenamiento (Re)", title = "Forma de onda previa al entrenamiento", xlabel = "Tiempo", ylabel = "Forma de Onda")
+function train_plot(tsteps, true_waveform, predicted_waveform; true_label="data", predict_label = "NN prediction", title = "", xlabel = "Time", ylabel = "Waveform", size = (1600,600))
     """
     Real waveform vs predicted waveform at zero training step.
     """
 
     N = length(tsteps)
-    plt1 = plot(
-        tsteps, true_waveform, label=true_label, title=title, 
+    plt = plot(
+        tsteps, true_waveform, label=true_label, 
         titlefontsize = title_font_size,
         legendfontsize = legend_font_size,
         guidefontsize=title_font_size,
@@ -24,7 +24,7 @@ function train_plot(tsteps, true_waveform, predicted_waveform, true_label="datos
         seriestype=:scatter,
         ms=5,
         markershape=:none,
-        size=(1200,350),
+        size=size,
         bottom_margin = 25Plots.mm,
         left_margin = 25Plots.mm,
         right_margin = 10Plots.mm,
@@ -32,25 +32,25 @@ function train_plot(tsteps, true_waveform, predicted_waveform, true_label="datos
         framestyle=:box,
         legend=:outertop,
         legend_column=2,
+        title=title,
         xlabel=xlabel,
         ylabel=ylabel
     )
 
-    plot!(plt1, tsteps[1:N], predicted_waveform[1:N], label=predict_label, linewidth=line_width)
-    plt = plot(plt1, size=(1600,600))
+    plot!(plt, tsteps[1:N], predicted_waveform[1:N], label=predict_label, linewidth=line_width)
 
     return plt
 end
 
 
-function test_plot(tsteps_train, tsteps, true_waveform, predicted_waveform, true_label="datos (Re)", predict_label = "NN entrenamiento (Re)", title = "Forma de onda previa al entrenamiento", xlabel = "Tiempo", ylabel = "Forma de Onda")
+function test_plot(tsteps_train, tsteps, true_waveform, predicted_waveform; true_label="data", predict_label = "NN prediction", title = "", xlabel = "Time", ylabel = "Waveform")
     """
     Real waveform vs predicted waveform at zero training step.
     """
 
     N = length(tsteps_train)
     plt = plot(
-        tsteps, true_waveform,  label=true_label, title=title, 
+        tsteps, true_waveform,  label=true_label, 
         titlefontsize = title_font_size,
         legendfontsize = legend_font_size,
         gridalpha=grid_alpha,
@@ -59,6 +59,9 @@ function test_plot(tsteps_train, tsteps, true_waveform, predicted_waveform, true
         linewidth=line_width,
         size=(1200,350),
         framestyle=:box,
+        title=title, 
+        xlabel=xlabel,
+        ylabel=ylabel,
         legend=false
     )
     
