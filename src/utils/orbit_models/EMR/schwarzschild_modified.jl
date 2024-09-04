@@ -16,8 +16,6 @@ function NNOrbitModel_Schwarzschild_modified_EMR(u, model_params, t; NN=nothing,
     χ, ϕ = u
     p, M, e, a = model_params
 
-    # neural_network_input = copy(u)
-    # push!(neural_network_input, a)
     neural_network_input = [χ, ϕ, a]
 
     if isnothing(NN)
