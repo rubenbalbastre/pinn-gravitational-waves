@@ -1,4 +1,3 @@
-using NLsolve
 
 
 function E_kerr(p::Float64, e::Float64, M::Float64, a::Float64)::Float64
@@ -53,7 +52,6 @@ function compute_drdτ_in_kerr_metric(χ::Float64, a::Float64, Δ:: Float64, L::
     return drdτ
 
 end
-
 
 
 function RelativisticOrbitModel_Kerr_EMR(u, model_params, t)
