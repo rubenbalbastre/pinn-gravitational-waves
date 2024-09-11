@@ -55,56 +55,6 @@ function callback_plots(tsteps, wf::Tuple, pred_soln)
 end
 
 
-function solution_plot(θ, mass1, mass2, q, prob_nn, tspan, tsteps, dt, dt_data, IDs; do_plots::Bool = true)
-
-        # get predicted ODE initial conditions u0
-        ϕ0 = 0.0
-        e0 = θ[1]
-        χ0 = θ[2]
-        p0 = x₀ * (1+e0*cos(χ0)) / mass1
-        u0 = [χ0, ϕ0, p0, e0]
-        NN_params = θ[3:end]
-    
-        # predict ODE solution
-        prob_remake = remake(prob_nn, u0=u0, p = NN_params, tspan=tspan)
-        optimized_solution = solve(prob_remake, RK4(), saveat = tsteps, dt = dt, adaptive=false)
-        pred_waveform_real, pred_waveform_imag = compute_waveform(dt_data, optimized_solution, q)
-    
-        # calculate predicted orbit
-        pred_orbit = soln2orbit(optimized_solution)
-        orbit_nn1, orbit_nn2 = one2two(pred_orbit, mass1, mass2)
-    
-        # read true solution
-        x, y = file2trajectory(tsteps,"./input/"*IDs[1]*"/trajectoryA_eccentric.txt")
-        x2, y2 = file2trajectory(tsteps,"./input/"*IDs[1]*"/trajectoryB_eccentric.txt")
-    
-        # plot orbit and loss function
-        plt1 = plot(x, y, linewidth = 2, label = "truth")
-        plot!(plt1, orbit_nn1[1,:], orbit_nn1[2,:], linestyle = :dash, linewidth = 2, label = "prediction")
-        plt2 = plot(losses, yaxis=:log, linewidth = 2, xlabel = "Iteration", ylabel = "Loss function", legend = false)
-        plt = plot(plt1, plt2, layout = (1,2))
-    
-        if do_plots
-            display(plot(plt))
-        end
-    
-        return pred_waveform_real, pred_waveform_imag, x, y, x2, y2, optimized_solution, orbit_nn1, orbit_nn2
-    end
-    
-
-function plot_initial_wf(tsteps, waveform, waveform_nn)::Nothing
-        #=
-        Plot the original waveform as well as the NN learned waveform from its initial parameters.
-        i.e. without any training
-        =#
-        plt = plot(tsteps, waveform, markershape=:circle, markeralpha = 0.25, linewidth = 2, alpha = 0.5, label="waveform data",
-           xlabel="Time",
-           ylabel="Waveform")
-        plot!(plt, tsteps, waveform_nn, label="waveform NN")
-        display(plt)
-end
-
-
 function compute_extrapolated_solutions_case1(
         time_spec, prob, prob_nn, model_params, mass_ratio,
         factor::Int = 5, doplots::Bool = true, saveplots::Bool = true)
