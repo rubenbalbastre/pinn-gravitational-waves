@@ -6,29 +6,38 @@ grid_alpha=0.4;
 grid_style=:dot;
 
 
-function train_plot(tsteps, true_waveform, predicted_waveform; true_label="data", predict_label = "NN prediction", title = "", xlabel = "Time", ylabel = "Waveform", size = (1600,600))
+function create_waveform_title(p, M, e, a)
+    """
+    Create title based on EMR parameters
+    """
+
+    title = "a = " * string(a) * ", p = " * string(p) * ", M = " * string(M) * ", e = " * string(e)
+
+    return title
+end
+
+
+function train_plot(tsteps, true_waveform, predicted_waveform; true_label="data", predict_label = "NN prediction", title = nothing, xlabel = "Time", ylabel = "Waveform", size = (1600,600))
     """
     Real waveform vs predicted waveform at zero training step.
     """
 
     N = length(tsteps)
+
     plt = plot(
         tsteps, true_waveform, label=true_label, 
-        titlefontsize = title_font_size,
-        legendfontsize = legend_font_size,
-        guidefontsize=title_font_size,
-        gridalpha=grid_alpha,
-        gridstyle=grid_style,
-        tickfontsize=tick_font_size,
+        # titlefontsize = title_font_size,
+        # legendfontsize = legend_font_size,
+        # guidefontsize=title_font_size,
+        # gridalpha=grid_alpha,
+        # gridstyle=grid_style,
+        # tickfontsize=tick_font_size,
         color=:black,
-        seriestype=:scatter,
-        ms=5,
-        markershape=:none,
+        # seriestype=:scatter,
+        ms=4,
+        markershape=:o,
         size=size,
-        bottom_margin = 25Plots.mm,
-        left_margin = 25Plots.mm,
-        right_margin = 10Plots.mm,
-        top_margin = 10Plots.mm,
+        margin=10Plots.mm,
         framestyle=:box,
         legend=:outertop,
         legend_column=2,
@@ -43,33 +52,40 @@ function train_plot(tsteps, true_waveform, predicted_waveform; true_label="data"
 end
 
 
-function test_plot(tsteps_train, tsteps, true_waveform, predicted_waveform; true_label="data", predict_label = "NN prediction", title = "", xlabel = "Time", ylabel = "Waveform")
+function test_plot(tsteps_train, tsteps, true_waveform, predicted_waveform; true_label="data", predict_label = "NN prediction", title = "", xlabel = "Time", ylabel = "Waveform",size=(1600, 600))
     """
     Real waveform vs predicted waveform at zero training step.
     """
 
     N = length(tsteps_train)
-    plt = plot(
-        tsteps, true_waveform,  label=true_label, 
-        titlefontsize = title_font_size,
-        legendfontsize = legend_font_size,
-        gridalpha=grid_alpha,
-        gridstyle=grid_style,
-        tickfontsize=tick_font_size,
-        linewidth=line_width,
-        size=(1200,350),
+    plt = plot(tsteps, true_waveform, label="True waveform", color=:blue4, linewidth=3)
+    plot!(plt, tsteps, predicted_waveform, label=predict_label, linestyle=:dash, color=:red, linewidth=3)
+    plot!(
+        plt,
+        tsteps_train, true_waveform[1:N],  
+        label=true_label, 
+        # titlefontsize = title_font_size,
+        # legendfontsize = legend_font_size,
+        # gridalpha=grid_alpha,
+        # gridstyle=grid_style,
+        # tickfontsize=tick_font_size,
+        color=:black,
+        markershape=:o,
+        markersize=4,
+        # linewidth=line_width,
+        plotstyle=:scatter,
+        size=size,
         framestyle=:box,
         title=title, 
         xlabel=xlabel,
         ylabel=ylabel,
-        legend=false
+        # legend=false,
+        margin=10Plots.mm,
     )
-    
-    plot!(plt, tsteps[1:end], predicted_waveform[1:end], label="NN test (Re)")
-    plot!(plt, tsteps[1:N], predicted_waveform[1:N], label=predict_label)
 
     return plt
 end
+
 
 
 function losses_plot(train_losses, test_losses; train_label="entrenamiento", test_label="test", title="Función de coste")
