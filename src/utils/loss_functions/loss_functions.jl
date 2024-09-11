@@ -12,7 +12,7 @@ function loss_function_case1_single_waveform(
     tsteps=nothing,
     loss_function::String = "mae",
     coef_data::Float64 = 1.0,
-    coef_weights::Float64 = 0.0
+    coef_weights::Float64 = 1.0
     )
     """
     Calculate loss function for a single EMR system
@@ -27,7 +27,7 @@ function loss_function_case1_single_waveform(
     elseif loss_function == "mse"
         loss = Flux.Losses.mse(pred_waveform, true_waveform)
     elseif loss_function == "huber"
-        loss = Flux.Losses.huber_loss(pred_waveform, true_waveform)
+        loss = Flux.Losses.huber_loss(pred_waveform, true_waveform, δ=0.01)
     elseif loss_function == "original"
         loss = sum(abs2, true_waveform .- pred_waveform)
     end
@@ -40,12 +40,13 @@ function loss_function_case1_single_waveform(
     loss_information["pred_waveform"] = pred_waveform
     loss_information["true_waveform"] = true_waveform
     loss_information["tsteps"] = tsteps
+    loss_information["model_params"] = model_params
 
     return loss_information
 end
 
 
-function loss_function_case1(NN_params::Vector{Float64}; processed_data, batch_number::Int64 = nothing, loss_function_name::String = "mae")
+function loss_function_case1(NN_params::Vector{Float64}; processed_data, batch_size::Int64 = nothing, loss_function_name::String = "mae")
     """
     Loss function for a set of EMR systems
     """
@@ -57,8 +58,8 @@ function loss_function_case1(NN_params::Vector{Float64}; processed_data, batch_n
 
     local train_loss_information, test_loss_information
 
-    train_subset = get_data_subset(processed_data["train"], batch_number)
-    test_subset = get_data_subset(processed_data["test"], batch_number)
+    train_subset = get_data_subset(processed_data["train"], batch_size)
+    test_subset = get_data_subset(processed_data["test"], batch_size)
 
     for train_item in train_subset
 
@@ -94,9 +95,9 @@ function loss_function_case1(NN_params::Vector{Float64}; processed_data, batch_n
     end
 
     train_loss = train_loss / length(processed_data["train"])
-    train_loss = train_loss / length(processed_data["train"])
-    train_loss = train_loss / length(processed_data["train"])
-    train_loss = train_loss / length(processed_data["train"])
+    train_metric = train_metric / length(processed_data["train"])
+    test_metric = test_metric / length(processed_data["test"])
+    test_loss = test_loss / length(processed_data["test"])
     
     agregated_metrics = Dict("train_loss" => train_loss, "test_loss" => test_loss, "train_metric" => train_metric, "test_metric" => test_metric)
 
