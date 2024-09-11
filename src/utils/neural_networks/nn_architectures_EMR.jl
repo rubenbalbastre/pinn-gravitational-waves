@@ -9,7 +9,7 @@ function process_chain(chain:: Chain; initialize_as_zero::Bool = true)
 
     if initialize_as_zero
         println("Initializating weights as zero.")
-        NN_params::Vector{Float64} = NN_params .* 0
+        NN_params::Vector{Float64} = NN_params / 100
     end
 
     NN(u, NN_params) = re(NN_params)(u)
