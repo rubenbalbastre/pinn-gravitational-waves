@@ -174,13 +174,6 @@ function get_data_subset(dataset, batch_size)
         if batch_size < length(dataset)
             # subset = StatsBase.sample(dataset, batch_size, replace = false)
             subset = rand(dataset, batch_size)
-            # subset = randn(dataset, batch_size) #StatsBase.sample(dataset, batch_size, replace = false)
-            # while length(unique(subset)) != batch_size
-            #     new_item = randn(dataset, 1)
-            #     if new_item not in subset
-            #         push!(new_item)
-            #     end
-            # end
         else
             subset = dataset
         end
