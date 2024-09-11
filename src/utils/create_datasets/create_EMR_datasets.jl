@@ -1,6 +1,6 @@
 
 
-function get_pinn_EMR_schwarzschild_modified(χ₀::Float64, ϕ₀::Float64, p::Float64, M::Float64, e::Float64, a,  mass_ratio::Float64, tspan, datasize::Int64, dt::Float64; factor::Int64 = 1)
+function get_pinn_EMR_schwarzschild_modified(χ₀::Float64, ϕ₀::Float64, p::Float64, M::Float64, e::Float64, a::Float64,  mass_ratio::Float64, tspan, datasize::Int64, dt::Float64; factor::Int64 = 1)
     """
     Get ODE NN problem in schwarzschild metric modified (includes spin parameter a)
     """
@@ -29,7 +29,7 @@ function get_pinn_EMR_schwarzschild_modified(χ₀::Float64, ϕ₀::Float64, p::
         "q" => 0.0,
         "p" => p,
         "e" => e,
-        "a" => 0.0,
+        "a" => a,
         "M" => M,
         "dt" => dt
     )
@@ -165,16 +165,28 @@ function process_datasets(datasets)
 end
 
 
-function get_data_subset(dataset, batch_number)
+function get_data_subset(dataset, batch_size)
     """
     Get random subset of data
     """
 
-    if batch_number !== nothing
-        subset_train = rand(dataset, batch_number)
+    if batch_size !== nothing
+        if batch_size < length(dataset)
+            # subset = StatsBase.sample(dataset, batch_size, replace = false)
+            subset = rand(dataset, batch_size)
+            # subset = randn(dataset, batch_size) #StatsBase.sample(dataset, batch_size, replace = false)
+            # while length(unique(subset)) != batch_size
+            #     new_item = randn(dataset, 1)
+            #     if new_item not in subset
+            #         push!(new_item)
+            #     end
+            # end
+        else
+            subset = dataset
+        end
     else
-        subset_train = dataset
+        subset = dataset
     end
 
-    return dataset
+    return subset
 end
