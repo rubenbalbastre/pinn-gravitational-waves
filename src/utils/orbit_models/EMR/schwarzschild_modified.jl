@@ -3,20 +3,18 @@
 function NNOrbitModel_Schwarzschild_modified_EMR(u, model_params, t; NN=nothing, NN_params=nothing)
     """
     Defines system of odes which describes motion of
-    point like particle with Newtonian physics, uses
+    point like particle with Schwarzschild modified physics, uses
 
     u[1] = χ
     u[2] = ϕ
 
-    where, p, M, and e are constants.
-
-    # NOTE: Schwarzschild MODIFIED model
+    where, p, M, e and a are constants.
     """
 
     χ, ϕ = u
     p, M, e, a = model_params
 
-    neural_network_input = [χ, ϕ, a]
+    neural_network_input = [χ, ϕ, a, p, M, e]
 
     if isnothing(NN)
         nn = [1,1]
