@@ -120,7 +120,7 @@ function loss_function_case2_single_waveform(
 
     mass_ratio = model_params["q"]
     M = model_params["M"]
-    pred_waveform_real, pred_waveform_imag = compute_waveform(dt_data, pred_sol, mass_ratio, M, model_params)
+    pred_waveform_real, _ = compute_waveform(dt_data, pred_sol, mass_ratio, M, model_params)
     p = pred_sol[3,:]
     e = pred_sol[4,:]
     N = length(pred_waveform_real)
