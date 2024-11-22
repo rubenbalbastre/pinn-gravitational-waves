@@ -1,5 +1,17 @@
 
 
+function create_directories(list_directories)
+    """
+    Check if a set of directories are created. If they are not, they are created.
+    """
+
+    for directory in list_directories
+        create_directory_if_does_not_exist(directory)
+    end
+
+end
+
+
 function create_directory_if_does_not_exist(directory)
 
     if ! isdir(directory)
