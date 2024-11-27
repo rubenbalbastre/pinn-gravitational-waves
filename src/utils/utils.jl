@@ -48,8 +48,7 @@ function import_project_utils(utils_path)
         "plots/plot_conditions.jl",
         "plots/plots.jl", 
 
-        "output/output.jl",
-        "output/output_utils.jl"
+        "output/output.jl"
     )
 
     for util in utils_to_import
