@@ -12,18 +12,19 @@ function loss_function_case1_single_waveform(
     tsteps=nothing,
     loss_function::String = "mae",
     coef_data::Float64 = 1.0,
-    coef_weights::Float64 = 1.0
+    coef_weights::Float64 = 0.01,
+    subset::Int64 = 250
     )
     """
     Calculate loss function for a single EMR system
     """
 
     mass_ratio = 0
-    p, M, e, a = model_params
+    _, M, _, _ = model_params
     pred_waveform, _ = compute_waveform(dt_data, pred_sol, mass_ratio, M, model_params)
 
     if loss_function == "mae"
-        loss = coef_data*Flux.Losses.mae(pred_waveform, true_waveform) + coef_weights*sum(abs2, NN_params)
+        loss = coef_data*Flux.Losses.mae(pred_waveform[1:subset], true_waveform[1:subset]) + coef_weights*sum(abs2, NN_params)
     elseif loss_function == "mse"
         loss = Flux.Losses.mse(pred_waveform, true_waveform)
     elseif loss_function == "huber"
@@ -32,7 +33,7 @@ function loss_function_case1_single_waveform(
         loss = sum(abs2, true_waveform .- pred_waveform)
     end
 
-    metric = Flux.Losses.mse(pred_waveform, true_waveform)
+    metric = Flux.Losses.mae(pred_waveform[1:subset], true_waveform[1:subset])
 
     loss_information = Dict{String, Any}()
     loss_information["loss"] = loss
@@ -46,7 +47,7 @@ function loss_function_case1_single_waveform(
 end
 
 
-function loss_function_case1(NN_params::Vector{Float64}; processed_data, batch_size::Int64 = nothing, loss_function_name::String = "mae")
+function loss_function_case1(NN_params::Vector{Float64}; processed_data, batch_size::Int64 = nothing, loss_function_name::String = "mae", subset::Int64 = 250)
     """
     Loss function for a set of EMR systems
     """
@@ -58,8 +59,8 @@ function loss_function_case1(NN_params::Vector{Float64}; processed_data, batch_s
 
     local train_loss_information, test_loss_information
 
-    train_subset = get_data_subset(processed_data["train"], batch_size)
-    test_subset = get_data_subset(processed_data["test"], batch_size)
+    train_subset = get_batch(processed_data["train"], batch_size)
+    test_subset = get_batch(processed_data["test"], batch_size)
 
     for train_item in train_subset
 
@@ -72,13 +73,13 @@ function loss_function_case1(NN_params::Vector{Float64}; processed_data, batch_s
         dt_data_train = train_item["dt_data"]
 
         pred_sol_train = Array(solve(remake(prob_nn_train, u0=u0_train, p = NN_params, tspan=tspan_train), RK4(), saveat = tsteps_train, dt = dt, adaptive=false))
-        train_loss_information = loss_function_case1_single_waveform(pred_sol_train, exact_waveform_train, dt_data_train, model_params_train, NN_params, tsteps=tsteps_train, loss_function=loss_function_name)
+        train_loss_information = loss_function_case1_single_waveform(pred_sol_train, exact_waveform_train, dt_data_train, model_params_train, NN_params, tsteps=tsteps_train, loss_function=loss_function_name, subset=subset)
 
         train_loss += abs(train_loss_information["loss"])
         train_metric += abs(train_loss_information["metric"])
     end
 
-    for test_item in test_subset
+    for test_item in reverse(test_subset)
         prob_nn_test = test_item["nn_problem"]
         exact_waveform_test = test_item["true_waveform"]
         tsteps_test = test_item["tsteps"]
@@ -88,7 +89,7 @@ function loss_function_case1(NN_params::Vector{Float64}; processed_data, batch_s
         dt_data_test = test_item["dt_data"]
 
         pred_sol_test = Array(solve(remake(prob_nn_test, u0=u0_test, p = NN_params, tspan=tspan_test), RK4(), saveat = tsteps_test, dt = dt, adaptive=false))
-        test_loss_information = loss_function_case1_single_waveform(pred_sol_test, exact_waveform_test, dt_data_test, model_params_test, NN_params, tsteps=tsteps_test, loss_function=loss_function_name)
+        test_loss_information = loss_function_case1_single_waveform(pred_sol_test, exact_waveform_test, dt_data_test, model_params_test, NN_params, tsteps=tsteps_test, loss_function=loss_function_name, subset=subset)
 
         test_loss += abs(test_loss_information["loss"])
         test_metric += abs(test_loss_information["metric"])
