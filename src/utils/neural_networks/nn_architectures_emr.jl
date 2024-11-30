@@ -8,7 +8,7 @@ function process_chain(chain:: Chain; initialize_as_zero::Bool = true)
     NN_params, re = Flux.destructure(chain)
 
     if initialize_as_zero
-        println("Initializating weights as zero.")
+        println("Reducing weights two orders of magnitued")
         NN_params::Vector{Float64} = NN_params / 100
     end
 
