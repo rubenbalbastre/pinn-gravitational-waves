@@ -17,6 +17,36 @@ function custom_act_function(x; custom_act_function_coef=custom_act_function_coe
 end
 
 
+function nn_kans_case2()
+    """
+    Kolmogorov-Arnold Neural Networks -> WIP
+    """
+
+    chain_chiphi = Chain(
+        x -> convert.(Float32, x), # TODO: should be done outsice chain definition
+        kan.KAN([4, 4, 2]; grid_size=5, spline_order=3, scale_base=1.0, base_activation=relu)
+    )
+    chain_pe = Chain(
+        x -> convert.(Float32, x), # TODO: should be done outsice chain definition
+        kan.KAN([4, 4, 2]; grid_size=5, spline_order=3, scale_base=1.0, base_activation=relu)
+    )
+
+    # process parameters
+    
+    NN_chiphi_params, re_chiphi = Flux.destructure(chain_chiphi)
+    NN_chiphi_params = NN_chiphi_params .* 0
+    NN_chiphi(u, NN_chiphi_params) = re_chiphi(NN_chiphi_params)(u)
+    NN_pe_params, re_pe = Flux.destructure(chain_pe)
+    NN_pe_params = NN_pe_params .* 0
+    NN_pe(u, NN_pe_params) = re_pe(NN_pe_params)(u)
+
+    NN_params = vcat(NN_chiphi_params,NN_pe_params)
+
+    return NN_params, NN_chiphi, NN_chiphi_params, NN_pe, NN_pe_params, chain_chiphi, chain_pe, re_chiphi, re_pe
+end
+
+
+
 function nn_model_case2(test:: String, n_ = 32, activation_function = tanh)
     """
     NN architectures for experiment 2 (non-EMR)
