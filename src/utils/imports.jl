@@ -4,9 +4,15 @@ function create_directories(list_directories)
     """
     Check if a set of directories are created. If they are not, they are created.
     """
-
+    
     for directory in list_directories
-        create_directory_if_does_not_exist(directory)
+        paths_structure = split(directory, "/")
+        for (index, path) in enumerate(paths_structure)
+            if path != ".."
+                dir = join(paths_structure[1:index], "/")
+                create_directory_if_does_not_exist(dir)
+            end
+        end
     end
 
 end
