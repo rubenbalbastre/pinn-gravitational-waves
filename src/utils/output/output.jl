@@ -78,14 +78,3 @@ function save_in_df(tsteps, waveform_real, waveform_imag, prediction_data)
 
     return df_solution, df_trajectories, df_waveforms, df_losses, df_parameters
 end
-
-function recompute_solution_and_write_results(save_data, do_plots)
-
-    # compute final solution and plot
-    output_solution = solution_plot(θ, mass1, mass2, q, prob_nn, tspan, tsteps, dt, dt_data, IDs, do_plots=do_plots)
-    # save in dataframes 
-    dataframes_output = save_in_df(tsteps, waveform_real, waveform_imag, output_solution)
-    df_solution, df_trajectories, df_waveforms, df_losses, df_parameters = dataframes_output
-    # save results
-    write_dataframes_and_plot(plt, df_solution, df_trajectories, df_waveforms, df_losses, df_parameters, IDs, save_data=save_data)
-end
