@@ -95,10 +95,10 @@ function loss_function_case1(NN_params::Vector{Float64}; processed_data, batch_s
         test_metric += abs(test_loss_information["metric"])
     end
 
-    train_loss = train_loss / length(processed_data["train"])
-    train_metric = train_metric / length(processed_data["train"])
-    test_metric = test_metric / length(processed_data["test"])
-    test_loss = test_loss / length(processed_data["test"])
+    train_loss = train_loss / length(train_subset)
+    train_metric = train_metric / length(train_subset)
+    test_metric = test_metric / length(test_subset)
+    test_loss = test_loss / length(test_subset)
     
     agregated_metrics = Dict("train_loss" => train_loss, "test_loss" => test_loss, "train_metric" => train_metric, "test_metric" => test_metric)
 
