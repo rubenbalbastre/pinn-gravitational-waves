@@ -28,13 +28,10 @@ function nn_model_emr_kerr_from_schwarzschild(number_of_neurons_in_hidden_layer:
         chain = Chain(
             # x = [χ, ϕ, a, p, M, e]
             # x -> Float32.([normalize_chi(x[1]), x[3], x[3]^2, x[3]^3, 1/x[3], 1/x[3]^2]),
-            # Dense(6, Int(number_of_neurons_in_hidden_layer/2), activation_function),
             x -> Float32.([x[1], x[1]*x[3], x[3],  x[3]^2, x[3]^3]),
             Dense(5, Int(number_of_neurons_in_hidden_layer/2), activation_function),    
             Dense(Int(number_of_neurons_in_hidden_layer/2), number_of_neurons_in_hidden_layer, activation_function),
             Dense(number_of_neurons_in_hidden_layer, number_of_neurons_in_hidden_layer, activation_function),
-            # Dense(number_of_neurons_in_hidden_layer, number_of_neurons_in_hidden_layer, activation_function),
-            # Dropout(0.8),
             Dense(number_of_neurons_in_hidden_layer, 2)
         )
     end
@@ -54,14 +51,10 @@ function nn_model_emr_kerr_from_newton(number_of_neurons_in_hidden_layer::Int64,
     if type == "standard"
         chain = Chain(
             # x = [χ, ϕ, a, p, M, e]
-            # x -> Float32.([normalize_chi(x[1]), x[3], x[3]^2, x[3]^3, 1/x[3], 1/x[3]^2]),
-            # Dense(6, Int(number_of_neurons_in_hidden_layer/2), activation_function),
             x -> Float32.([x[1], x[1]*x[3], x[3],  x[3]^2, x[3]^3]),
             Dense(5, Int(number_of_neurons_in_hidden_layer/2), activation_function),    
             Dense(Int(number_of_neurons_in_hidden_layer/2), number_of_neurons_in_hidden_layer, activation_function),
             Dense(number_of_neurons_in_hidden_layer, number_of_neurons_in_hidden_layer, activation_function),
-            # Dense(number_of_neurons_in_hidden_layer, number_of_neurons_in_hidden_layer, activation_function),
-            # Dropout(0.8),
             Dense(number_of_neurons_in_hidden_layer, 2)
         )
     end
